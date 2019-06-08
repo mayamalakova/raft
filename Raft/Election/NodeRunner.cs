@@ -20,10 +20,13 @@ namespace Raft.Election
             _timer = new Timer(electionTimeout * 10);
         }
         
-        public void ReceiveMessage(string message)
+        public void ReceiveMessage(NodeMessage message)
         {
-            Console.WriteLine($"node {Node.Name} got message {message}");
-            RestartElectionTimeout();
+            if (message.IsBroadcast)
+            {
+                Console.WriteLine($"node {Node.Name} got message {message.Message}");
+                RestartElectionTimeout();
+            }
         }
 
         public void Start()

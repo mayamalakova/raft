@@ -13,7 +13,7 @@ namespace Raft.Communication
             _listeners = listeners;
         }
 
-        public void Broadcast(string message)
+        public void Broadcast(NodeMessage message)
         {
             foreach (var listener in _listeners)
             {

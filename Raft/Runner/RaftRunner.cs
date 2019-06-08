@@ -37,7 +37,7 @@ namespace Raft.Runner
                 }
                 else
                 {
-                    messageBroadcaster.Broadcast(newValue);
+                    messageBroadcaster.Broadcast(new NodeMessage(newValue, true));
                 }
             }
         }
