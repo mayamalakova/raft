@@ -5,13 +5,7 @@ namespace Raft.Communication
 {
     public class MessageBroker: IMessageBroker
     {
-        private readonly List<NodeRunner> _listeners = new List<NodeRunner>();
-
-        public void Broadcast(string message)
-        {
-            var nodeMessage = new NodeMessage(message, true);
-            NotifyListeners(nodeMessage);
-        }
+        private readonly List<IMessageBrokerListener> _listeners = new List<IMessageBrokerListener>();
 
         public void Broadcast(NodeMessage nodeMessage)
         {
@@ -29,9 +23,9 @@ namespace Raft.Communication
             NotifyListeners(nodeMessage);
         }
 
-        public void Register(NodeRunner node)
+        public void Register(IMessageBrokerListener listener)
         {
-            _listeners.Add(node);
+            _listeners.Add(listener);
         }
         
         private void NotifyListeners(NodeMessage nodeMessage)

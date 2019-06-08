@@ -4,7 +4,7 @@ using Raft.Entities;
 
 namespace Raft.Election
 {
-    public class NodeRunner
+    public class NodeRunner: IMessageBrokerListener
     {
         protected readonly IMessageBroker Broker;
         protected Node Node { get; }
