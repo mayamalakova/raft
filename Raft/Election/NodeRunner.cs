@@ -6,7 +6,7 @@ namespace Raft.Election
 {
     public class NodeRunner
     {
-        private readonly IMessageBroker _broker;
+        protected readonly IMessageBroker Broker;
         protected Node Node { get; }
         protected NodeStatus Status { get; set; }
 
@@ -14,8 +14,8 @@ namespace Raft.Election
 
         public NodeRunner(string name, int electionTimeout, IMessageBroker broker)
         {
-            _broker = broker;
-            _broker.Register(this);
+            Broker = broker;
+            Broker.Register(this);
             _timer = new Timer(electionTimeout * 10);
 
             Node = new Node(name);

@@ -1,9 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using Raft.Election;
-using Raft.Entities;
 
 namespace Raft.Communication
 {
@@ -13,23 +9,37 @@ namespace Raft.Communication
 
         public void Broadcast(string message)
         {
-            foreach (var listener in _listeners)
-            {
-                listener.ReceiveMessage(new NodeMessage(message, true));
-            }
+            var nodeMessage = new NodeMessage(message, true);
+            NotifyListeners(nodeMessage);
         }
-        
+
+        public void Broadcast(NodeMessage nodeMessage)
+        {
+            NotifyListeners(nodeMessage);
+        }
+
         public void Send(string message)
         {
-            foreach (var listener in _listeners)
-            {
-                listener.ReceiveMessage(new NodeMessage(message, false));
-            }
+            var nodeMessage = new NodeMessage(message, false);
+            NotifyListeners(nodeMessage);
+        }
+
+        public void Send(NodeMessage nodeMessage)
+        {
+            NotifyListeners(nodeMessage);
         }
 
         public void Register(NodeRunner node)
         {
             _listeners.Add(node);
+        }
+        
+        private void NotifyListeners(NodeMessage nodeMessage)
+        {
+            foreach (var listener in _listeners)
+            {
+                listener.ReceiveMessage(nodeMessage);
+            }
         }
     }
 }

@@ -11,8 +11,13 @@ namespace Raft.Election
 
         public override void ReceiveMessage(NodeMessage message)
         {
-            Console.WriteLine($"Leader node {Node.Name} got message {message.Message}");
-            RestartElectionTimeout();
+            if (!Node.Name.Equals(message.SenderName))
+            {
+                Console.WriteLine($"Leader node {Node.Name} got message {message.Message}");
+                var logUpdate = new NodeMessage(message.Message, true, MessageType.LogUpdate, Node.Name);
+                Broker.Broadcast(logUpdate);
+                RestartElectionTimeout();
+            }
         }
     }
 }
