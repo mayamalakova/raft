@@ -24,9 +24,9 @@ namespace Raft.Election
         
         public virtual void ReceiveMessage(NodeMessage message)
         {
-            if (message.IsBroadcast)
+            if (message.Type != MessageType.ValueUpdate)
             {
-                Console.WriteLine($"node {Node.Name} got message {message.Message}");
+                Console.WriteLine($"node {Node.Name} got message {message.Value}");
                 RestartElectionTimeout();
             }
         }

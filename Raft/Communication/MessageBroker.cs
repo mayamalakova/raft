@@ -7,18 +7,13 @@ namespace Raft.Communication
     {
         private readonly List<IMessageBrokerListener> _listeners = new List<IMessageBrokerListener>();
 
+        public void Broadcast(string newValue)
+        {
+            var nodeMessage = new NodeMessage(newValue, MessageType.ValueUpdate, null);
+            NotifyListeners(nodeMessage);
+        }
+
         public void Broadcast(NodeMessage nodeMessage)
-        {
-            NotifyListeners(nodeMessage);
-        }
-
-        public void Send(string message)
-        {
-            var nodeMessage = new NodeMessage(message, false);
-            NotifyListeners(nodeMessage);
-        }
-
-        public void Send(NodeMessage nodeMessage)
         {
             NotifyListeners(nodeMessage);
         }

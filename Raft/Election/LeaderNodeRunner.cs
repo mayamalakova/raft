@@ -13,8 +13,8 @@ namespace Raft.Election
         {
             if (!Node.Name.Equals(message.SenderName))
             {
-                Console.WriteLine($"Leader node {Node.Name} got message {message.Message}");
-                var logUpdate = new NodeMessage(message.Message, true, MessageType.LogUpdate, Node.Name);
+                Console.WriteLine($"Leader node {Node.Name} got message {message.Value}");
+                var logUpdate = new NodeMessage(message.Value, MessageType.LogUpdate, Node.Name);
                 Broker.Broadcast(logUpdate);
                 RestartElectionTimeout();
             }

@@ -10,7 +10,7 @@ namespace Raft.Runner
     {
         private bool _keepRunning = true;
         private static readonly TimeoutGenerator TimeoutGenerator = new TimeoutGenerator();
-        private readonly MessageBroker _messageBroker = new MessageBroker();
+        private readonly IMessageBroker _messageBroker = new MessageBroker();
 
         public void Run()
         {
@@ -30,7 +30,7 @@ namespace Raft.Runner
                 }
                 else
                 {
-                    _messageBroker.Send(newValue);
+                    _messageBroker.Broadcast(newValue);
                 }
             }
         }

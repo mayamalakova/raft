@@ -2,23 +2,14 @@ namespace Raft.Election
 {
     public class NodeMessage
     {
-        public string Message { get; set; }
-        public bool IsBroadcast { get; set; }
+        public string Value { get; set; }
         public MessageType Type { get; set; }
 
         public string SenderName { get; set; }
         
-        public NodeMessage(string message, bool isBroadcast)
+        public NodeMessage(string value, MessageType type, string senderName)
         {
-            Message = message;
-            IsBroadcast = isBroadcast;
-            Type = MessageType.Info;
-        }
-        
-        public NodeMessage(string message, bool isBroadcast, MessageType type, string senderName)
-        {
-            Message = message;
-            IsBroadcast = isBroadcast;
+            Value = value;
             Type = type;
             SenderName = senderName;
         }
@@ -26,6 +17,7 @@ namespace Raft.Election
 
     public enum MessageType
     {
+        ValueUpdate,
         LogUpdate,
         LogCommit,
         Info
