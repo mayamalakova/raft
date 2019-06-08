@@ -1,6 +1,6 @@
 using System;
 
-namespace Raft
+namespace Raft.Time
 {
     public class TimeoutGenerator
     {

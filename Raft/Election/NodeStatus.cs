@@ -1,4 +1,4 @@
-namespace Raft.Entities
+namespace Raft.Election
 {
     public enum NodeStatus
     {

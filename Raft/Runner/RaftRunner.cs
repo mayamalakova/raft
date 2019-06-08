@@ -1,9 +1,10 @@
 using System;
 using System.Collections.ObjectModel;
 using Raft.Communication;
-using Raft.Entities;
+using Raft.Election;
+using Raft.Time;
 
-namespace Raft
+namespace Raft.Runner
 {
     public class RaftRunner
     {
@@ -16,15 +17,13 @@ namespace Raft
             var node2 = StartNode("B");
             var node3 = StartNode("C");
 
-            var nodes = new Collection<Node>()
+            var nodes = new Collection<NodeRunner>()
             {
                 node1,
                 node2,
                 node3,
             };
             var messageBroadcaster = new MessageBroadcaster(nodes);
-            messageBroadcaster.Broadcast("start");
-
             while (_keepRunning)
             {
                 Console.WriteLine("Client message:");
@@ -34,13 +33,16 @@ namespace Raft
                 {
                     _keepRunning = false;
                 }
-                messageBroadcaster.Broadcast(newValue);
+                else
+                {
+                    messageBroadcaster.Broadcast(newValue);
+                }
             }
         }
 
-        private static Node StartNode(string name)
+        private static NodeRunner StartNode(string name)
         {
-            var node = new Node(name, NodeStatus.Follower, TimeoutGenerator.GenerateElectionTimeout(), null);
+            var node = new NodeRunner(name, TimeoutGenerator.GenerateElectionTimeout());
             node.Start();
             return node;
         }

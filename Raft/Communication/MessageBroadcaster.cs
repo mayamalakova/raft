@@ -1,13 +1,14 @@
 using System.Collections.ObjectModel;
+using Raft.Election;
 using Raft.Entities;
 
 namespace Raft.Communication
 {
     public class MessageBroadcaster
     {
-        private readonly Collection<Node> _listeners;
+        private readonly Collection<NodeRunner> _listeners;
 
-        public MessageBroadcaster(Collection<Node> listeners)
+        public MessageBroadcaster(Collection<NodeRunner> listeners)
         {
             _listeners = listeners;
         }
