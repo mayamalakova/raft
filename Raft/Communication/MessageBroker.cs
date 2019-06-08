@@ -1,17 +1,15 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Raft.Election;
 using Raft.Entities;
 
 namespace Raft.Communication
 {
-    public class MessageBroker
+    public class MessageBroker: IMessageBroker
     {
-        private readonly Collection<NodeRunner> _listeners;
-
-        public MessageBroker(Collection<NodeRunner> listeners)
-        {
-            _listeners = listeners;
-        }
+        private readonly List<NodeRunner> _listeners = new List<NodeRunner>();
 
         public void Broadcast(string message)
         {
@@ -27,6 +25,11 @@ namespace Raft.Communication
             {
                 listener.ReceiveMessage(new NodeMessage(message, false));
             }
+        }
+
+        public void Register(NodeRunner node)
+        {
+            _listeners.Add(node);
         }
     }
 }

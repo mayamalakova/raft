@@ -10,22 +10,15 @@ namespace Raft.Runner
     {
         private bool _keepRunning = true;
         private static readonly TimeoutGenerator TimeoutGenerator = new TimeoutGenerator();
+        private readonly MessageBroker _messageBroker = new MessageBroker();
 
         public void Run()
         {
-            var node0 = StartLeaderNode("D");
-            var node1 = StartNode("A");
-            var node2 = StartNode("B");
-            var node3 = StartNode("C");
-
-            var nodes = new Collection<NodeRunner>()
-            {
-                node0,
-                node1,
-                node2,
-                node3,
-            };
-            var messageBroker = new MessageBroker(nodes);
+            StartLeaderNode("L");
+            StartNode("A");
+            StartNode("B");
+            StartNode("C");
+           
             while (_keepRunning)
             {
                 Console.WriteLine("Client message:");
@@ -37,21 +30,21 @@ namespace Raft.Runner
                 }
                 else
                 {
-                    messageBroker.Broadcast(newValue);
+                    _messageBroker.Send(newValue);
                 }
             }
         }
 
-        private static NodeRunner StartLeaderNode(string name)
+        private NodeRunner StartLeaderNode(string name)
         {
-            var node = new LeaderNodeRunner(name, TimeoutGenerator.GenerateElectionTimeout());
+            var node = new LeaderNodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
             node.Start();
             return node;
         }
 
-        private static NodeRunner StartNode(string name)
+        private NodeRunner StartNode(string name)
         {
-            var node = new NodeRunner(name, TimeoutGenerator.GenerateElectionTimeout());
+            var node = new NodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
             node.Start();
             return node;
         }

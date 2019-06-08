@@ -6,21 +6,23 @@ namespace Raft.Election
 {
     public class NodeRunner
     {
-        private Node Node { get; }
+        private readonly IMessageBroker _broker;
+        protected Node Node { get; }
         protected NodeStatus Status { get; set; }
 
         private readonly Timer _timer;
 
-        public NodeRunner(string name, int electionTimeout)
+        public NodeRunner(string name, int electionTimeout, IMessageBroker broker)
         {
+            _broker = broker;
+            _broker.Register(this);
+            _timer = new Timer(electionTimeout * 10);
 
             Node = new Node(name);
             Status = NodeStatus.Follower;
-            Console.WriteLine($"node {Node.Name} - has timeout {electionTimeout}");
-            _timer = new Timer(electionTimeout * 10);
         }
         
-        public void ReceiveMessage(NodeMessage message)
+        public virtual void ReceiveMessage(NodeMessage message)
         {
             if (message.IsBroadcast)
             {
@@ -37,11 +39,11 @@ namespace Raft.Election
             
             _timer.Elapsed += (sender, args) =>
             {
-                Console.WriteLine($"node {Node.Name} - timer elapsed");
+//                Console.WriteLine($"node {Node.Name} - timer elapsed");
             };
         }
 
-        private void RestartElectionTimeout()
+        protected void RestartElectionTimeout()
         {
             _timer.Stop();
             _timer.Start();
