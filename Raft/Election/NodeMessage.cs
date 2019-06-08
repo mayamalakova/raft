@@ -19,7 +19,8 @@ namespace Raft.Election
     {
         ValueUpdate,
         LogUpdate,
+        LogUpdateReceived,
         LogCommit,
-        Info
+        Info,
     }
 }

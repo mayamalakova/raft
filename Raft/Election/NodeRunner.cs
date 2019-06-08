@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Timers;
 using Raft.Entities;
 
@@ -6,11 +7,12 @@ namespace Raft.Election
 {
     public class NodeRunner: IMessageBrokerListener
     {
+        private readonly Timer _timer;
         protected readonly IMessageBroker Broker;
         protected Node Node { get; }
         protected NodeStatus Status { get; set; }
 
-        private readonly Timer _timer;
+        private readonly Collection<LogEntry> _log = new Collection<LogEntry>();
 
         public NodeRunner(string name, int electionTimeout, IMessageBroker broker)
         {
@@ -24,11 +26,24 @@ namespace Raft.Election
         
         public virtual void ReceiveMessage(NodeMessage message)
         {
-            if (message.Type != MessageType.ValueUpdate)
+            if (message.Type == MessageType.LogUpdate)
             {
-                Console.WriteLine($"node {Node.Name} got message {message.Value}");
-                RestartElectionTimeout();
+                Console.WriteLine($"node {Node.Name} got LogUpdate {message.Value}");
+                UpdateLog(message);
+                ConfirmLogUpdate();
             }
+        }
+
+        private void ConfirmLogUpdate()
+        {
+            var nodeMessage = new NodeMessage(null, MessageType.LogUpdateReceived, Node.Name);
+            Broker.Broadcast(nodeMessage);
+        }
+
+        private void UpdateLog(NodeMessage message)
+        {
+            var logEntry = new LogEntry(OperationType.Update, message.Value);
+            _log.Add(logEntry);
         }
 
         public void Start()
