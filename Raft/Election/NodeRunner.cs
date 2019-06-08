@@ -7,8 +7,8 @@ namespace Raft.Election
     public class NodeRunner
     {
         private Node Node { get; }
-        private NodeStatus Status { get; }
-        
+        protected NodeStatus Status { get; set; }
+
         private readonly Timer _timer;
 
         public NodeRunner(string name, int electionTimeout)
