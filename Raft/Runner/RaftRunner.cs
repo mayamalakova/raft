@@ -25,7 +25,7 @@ namespace Raft.Runner
                 node2,
                 node3,
             };
-            var messageBroadcaster = new MessageBroadcaster(nodes);
+            var messageBroker = new MessageBroker(nodes);
             while (_keepRunning)
             {
                 Console.WriteLine("Client message:");
@@ -37,7 +37,7 @@ namespace Raft.Runner
                 }
                 else
                 {
-                    messageBroadcaster.Broadcast(new NodeMessage(newValue, true));
+                    messageBroker.Broadcast(newValue);
                 }
             }
         }
