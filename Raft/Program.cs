@@ -1,12 +1,20 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using Raft.Communication;
+using Raft.Entities;
 
 namespace Raft
 {
-    class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine("Hello Raft!");
+            
+            new RaftRunner().Run();
+
+            Console.WriteLine("Bye Raft!");
+
         }
     }
 }
