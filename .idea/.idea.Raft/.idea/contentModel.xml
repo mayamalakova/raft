@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Users\maya.malakova\.Rider2019.1\config\scratches" t="IncludeRecursive" />
+    <e p="C:\Users\maya.malakova\.Rider2019.1\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\maya.malakova\.Rider2019.1\system\resharper-host\local\Transient\ReSharperHost\v191\SolutionCaches\_Raft.891205916.00" t="ExcludeRecursive" />
+    <e p="D:\prj\raft" t="IncludeFlat">
+      <e p="Raft.sln" t="IncludeFlat" />
+    </e>
+  </component>
+</project>
