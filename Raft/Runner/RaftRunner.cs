@@ -1,5 +1,4 @@
 using System;
-using System.Collections.ObjectModel;
 using Raft.Communication;
 using Raft.Election;
 using Raft.Time;
@@ -35,18 +34,16 @@ namespace Raft.Runner
             }
         }
 
-        private NodeRunner StartLeaderNode(string name)
+        private void StartLeaderNode(string name)
         {
             var node = new LeaderNodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
             node.Start();
-            return node;
         }
 
-        private NodeRunner StartNode(string name)
+        private void StartNode(string name)
         {
             var node = new NodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
             node.Start();
-            return node;
         }
     }
 }

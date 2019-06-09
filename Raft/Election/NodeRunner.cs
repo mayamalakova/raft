@@ -31,7 +31,7 @@ namespace Raft.Election
             {
                 case MessageType.LogUpdate:
                     UpdateLog(message, message.Id);
-                    ConfirmLogUpdate(message, message.Id);
+                    ConfirmLogUpdate(message.Id);
                     break;
 
                 case MessageType.LogUpdateReceived:
@@ -50,7 +50,7 @@ namespace Raft.Election
             }
         }
 
-        private void ConfirmLogUpdate(NodeMessage message, Guid entryId)
+        private void ConfirmLogUpdate(Guid entryId)
         {
             Console.WriteLine($"node {Node.Name} confirms {entryId}");
             var nodeMessage = new NodeMessage(null, MessageType.LogUpdateReceived, Node.Name, entryId);
@@ -70,7 +70,7 @@ namespace Raft.Election
             {
                 return;
             }
-            Console.WriteLine($"{Node.Name} committing log {message.Id}");
+            Console.WriteLine($"{Node.Name} committing {message.Id}");
             logEntry.Type = OperationType.Commit;
             Node.Value = message.Value;
         }
