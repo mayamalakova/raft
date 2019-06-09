@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Timers;
 using Raft.Entities;
 
@@ -26,29 +27,56 @@ namespace Raft.Election
         
         public virtual void ReceiveMessage(NodeMessage message)
         {
-            if (message.Type == MessageType.LogUpdate)
+            switch (message.Type)
             {
-                Console.WriteLine($"node {Node.Name} got LogUpdate {message.Value}");
-                UpdateLog(message);
-                ConfirmLogUpdate();
+                case MessageType.LogUpdate:
+                    UpdateLog(message, message.Id);
+                    ConfirmLogUpdate(message, message.Id);
+                    break;
+
+                case MessageType.LogUpdateReceived:
+                    break;
+                
+                case MessageType.LogCommit:
+                    CommitLog(message);
+                    break;
+                
+                case MessageType.ValueUpdate:
+                    break;
+                case MessageType.Info:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
-        private void ConfirmLogUpdate()
+        private void ConfirmLogUpdate(NodeMessage message, Guid entryId)
         {
-            var nodeMessage = new NodeMessage(null, MessageType.LogUpdateReceived, Node.Name);
+            Console.WriteLine($"node {Node.Name} confirms {entryId}");
+            var nodeMessage = new NodeMessage(null, MessageType.LogUpdateReceived, Node.Name, entryId);
             Broker.Broadcast(nodeMessage);
         }
 
-        private void UpdateLog(NodeMessage message)
+        protected void UpdateLog(NodeMessage message, Guid entryId)
         {
-            var logEntry = new LogEntry(OperationType.Update, message.Value);
+            var logEntry = new LogEntry(OperationType.Update, message.Value, entryId);
             _log.Add(logEntry);
+        }
+        
+        protected void CommitLog(NodeMessage message)
+        {
+            var logEntry = LastLogEntry();
+            if (logEntry?.Id != message.Id || logEntry.Type == OperationType.Commit)
+            {
+                return;
+            }
+            Console.WriteLine($"{Node.Name} committing log {message.Id}");
+            logEntry.Type = OperationType.Commit;
+            Node.Value = message.Value;
         }
 
         public void Start()
         {
-            Console.WriteLine($"node {Node.Name} - timer started");
             _timer.Start();
             _timer.AutoReset = true;
             
@@ -62,6 +90,11 @@ namespace Raft.Election
         {
             _timer.Stop();
             _timer.Start();
+        }
+        
+        protected LogEntry LastLogEntry()
+        {
+            return _log.Count > 0 ? _log.Last() : null;
         }
         
     }

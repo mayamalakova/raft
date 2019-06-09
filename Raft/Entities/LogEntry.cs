@@ -1,3 +1,5 @@
+using System;
+
 namespace Raft.Entities
 {
     public class LogEntry
@@ -5,11 +7,13 @@ namespace Raft.Entities
     {
         public OperationType Type { get; set; }
         public string Value { get; set; }
-        
-        public LogEntry(OperationType type, string value)
+        public Guid Id { get; set; }
+
+        public LogEntry(OperationType type, string value, Guid id)
         {
             Type = type;
             Value = value;
+            Id = id;
         }
 
     }
@@ -18,6 +22,7 @@ namespace Raft.Entities
     {
         Add,
         Update,
-        Remove
+        Remove,
+        Commit
     }
 }

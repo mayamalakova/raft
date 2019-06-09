@@ -5,7 +5,7 @@ namespace Raft.Entities
 {
     public class Node
     {
-        private string Value { get; }
+        public string Value { get; set; }
         public string Name { get; }
         private IEnumerable<LogEntry> Log { get; }
 

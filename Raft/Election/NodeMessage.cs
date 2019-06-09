@@ -1,3 +1,5 @@
+using System;
+
 namespace Raft.Election
 {
     public class NodeMessage
@@ -6,12 +8,15 @@ namespace Raft.Election
         public MessageType Type { get; set; }
 
         public string SenderName { get; set; }
+
+        public Guid Id { get; set; }
         
-        public NodeMessage(string value, MessageType type, string senderName)
+        public NodeMessage(string value, MessageType type, string senderName, Guid id)
         {
             Value = value;
             Type = type;
             SenderName = senderName;
+            Id = id;
         }
     }
 

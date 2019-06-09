@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Raft.Election;
 
@@ -9,7 +10,7 @@ namespace Raft.Communication
 
         public void Broadcast(string newValue)
         {
-            var nodeMessage = new NodeMessage(newValue, MessageType.ValueUpdate, null);
+            var nodeMessage = new NodeMessage(newValue, MessageType.ValueUpdate, null, Guid.Empty);
             NotifyListeners(nodeMessage);
         }
 
