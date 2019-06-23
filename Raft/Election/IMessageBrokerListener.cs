@@ -4,5 +4,6 @@ namespace Raft.Election
     {
         void ReceiveMessage(NodeMessage message);
         string Name { get; }
+        void DisplayStatus();
     }
 }
