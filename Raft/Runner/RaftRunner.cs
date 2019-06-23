@@ -139,7 +139,7 @@ namespace Raft.Runner
             _nodeRunners.Add(nodeRunner);
             var task = new Task(() =>
             {
-                nodeRunner.Subscribe(new NodeViewer());
+//                nodeRunner.Subscribe(new NodeViewer());
                 nodeRunner.Start();
             });
             task.Start();
@@ -151,7 +151,7 @@ namespace Raft.Runner
             _nodeRunners.Add(nodeRunner);
             var task = new Task(() =>
             {
-                nodeRunner.Subscribe(new NodeViewer());
+//                nodeRunner.Subscribe(new NodeViewer());
                 nodeRunner.Start();
             });
             task.Start();
