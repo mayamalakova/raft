@@ -1,5 +1,7 @@
 using System;
-using System.Collections.ObjectModel;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 using Raft.Communication;
 using Raft.Election;
 using Raft.Time;
@@ -14,11 +16,13 @@ namespace Raft.Runner
 
         public void Run()
         {
+            ConfigureLogging();
+
             StartLeaderNode("L");
             StartNode("A");
             StartNode("B");
             StartNode("C");
-           
+
             while (_keepRunning)
             {
                 Console.WriteLine("Client message:");
@@ -35,18 +39,30 @@ namespace Raft.Runner
             }
         }
 
-        private NodeRunner StartLeaderNode(string name)
+        private void ConfigureLogging()
+        {
+            var config = new LoggingConfiguration();
+            var fileTarget = new FileTarget("target2")
+            {
+                FileName = "${basedir}/raft.log",
+                Layout = "${longdate} ${level} ${message}  ${exception}"
+            };
+            config.AddTarget(fileTarget);
+            config.AddRuleForAllLevels(fileTarget);
+
+            LogManager.Configuration = config;
+        }
+
+        private void StartLeaderNode(string name)
         {
             var node = new LeaderNodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
             node.Start();
-            return node;
         }
 
-        private NodeRunner StartNode(string name)
+        private void StartNode(string name)
         {
             var node = new NodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
             node.Start();
-            return node;
         }
     }
 }

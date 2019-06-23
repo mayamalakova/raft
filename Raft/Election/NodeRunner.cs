@@ -2,12 +2,16 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Timers;
+using NLog;
 using Raft.Entities;
+using Raft.View;
 
 namespace Raft.Election
 {
     public class NodeRunner: IMessageBrokerListener
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        
         private readonly Timer _timer;
         protected readonly IMessageBroker Broker;
         protected Node Node { get; }
@@ -23,6 +27,9 @@ namespace Raft.Election
 
             Node = new Node(name);
             Status = NodeStatus.Follower;
+            
+            var nodeViewer = new NodeViewer();
+            Node.Subscribe(nodeViewer);
         }
         
         public virtual void ReceiveMessage(NodeMessage message)
@@ -31,7 +38,7 @@ namespace Raft.Election
             {
                 case MessageType.LogUpdate:
                     UpdateLog(message, message.Id);
-                    ConfirmLogUpdate(message, message.Id);
+                    ConfirmLogUpdate(message.Id);
                     break;
 
                 case MessageType.LogUpdateReceived:
@@ -50,9 +57,10 @@ namespace Raft.Election
             }
         }
 
-        private void ConfirmLogUpdate(NodeMessage message, Guid entryId)
+        private void ConfirmLogUpdate(Guid entryId)
         {
-            Console.WriteLine($"node {Node.Name} confirms {entryId}");
+            Logger.Debug($"node {Node.Name} confirms {entryId}");
+            
             var nodeMessage = new NodeMessage(null, MessageType.LogUpdateReceived, Node.Name, entryId);
             Broker.Broadcast(nodeMessage);
         }
@@ -70,9 +78,10 @@ namespace Raft.Election
             {
                 return;
             }
-            Console.WriteLine($"{Node.Name} committing log {message.Id}");
+            Logger.Debug($"{Node.Name} committing {message.Id}");
+            
             logEntry.Type = OperationType.Commit;
-            Node.Value = message.Value;
+            Node.Value = logEntry.Value;
         }
 
         public void Start()
@@ -82,7 +91,7 @@ namespace Raft.Election
             
             _timer.Elapsed += (sender, args) =>
             {
-//                Console.WriteLine($"node {Node.Name} - timer elapsed");
+                Logger.Trace($"node {Node.Name} - timer elapsed");
             };
         }
 

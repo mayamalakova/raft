@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using NLog;
 
 namespace Raft.Election
 {
     public class LeaderNodeRunner: NodeRunner
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        
         private readonly HashSet<string> _confirmedNodes = new HashSet<string>();
         private const int NodesCount = 3;
 
@@ -25,7 +28,7 @@ namespace Raft.Election
             switch (message.Type)
             {
                 case MessageType.ValueUpdate:
-                    Console.WriteLine($"Leader {Node.Name} got value {message.Value}");
+                    Logger.Debug($"Leader {Node.Name} got value {message.Value}");
                     
                     var entryId = Guid.NewGuid();
                     UpdateLog(message, entryId);
@@ -66,7 +69,8 @@ namespace Raft.Election
 
         private void SendLogUpdateRequest(NodeMessage message, Guid entryId)
         {
-            Console.WriteLine($"{Node.Name} initiating update {entryId}");
+            Logger.Debug($"{Node.Name} initiating update {entryId}");
+            
             var logUpdate = new NodeMessage(message.Value, MessageType.LogUpdate, Node.Name, entryId);
             Broker.Broadcast(logUpdate);
         }
