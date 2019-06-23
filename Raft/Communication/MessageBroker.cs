@@ -1,12 +1,12 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using Raft.Election;
 
 namespace Raft.Communication
 {
     public class MessageBroker: IMessageBroker
     {
-        private readonly List<IMessageBrokerListener> _listeners = new List<IMessageBrokerListener>();
+        private readonly ConcurrentBag<IMessageBrokerListener> _listeners = new ConcurrentBag<IMessageBrokerListener>();
 
         public void Broadcast(string newValue)
         {

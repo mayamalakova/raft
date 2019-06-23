@@ -16,39 +16,33 @@ namespace Raft.Election
             Status = NodeStatus.Leader;    
         }
 
-        public override void ReceiveMessage(NodeMessage message)
+        protected override void RespondToMessage(NodeMessage message)
         {
-            if (Node.Name.Equals(message.SenderName))
-            {
-                return;
-            }
-
-            RestartElectionTimeout();
-            
             switch (message.Type)
             {
                 case MessageType.ValueUpdate:
                     Logger.Debug($"Leader {Node.Name} got value {message.Value}");
-                    
+
                     var entryId = Guid.NewGuid();
                     UpdateLog(message, entryId);
                     SendLogUpdateRequest(message, entryId);
                     break;
-                
+
                 case MessageType.LogUpdateReceived:
                     if (message.Id != LastLogEntry().Id)
                     {
                         return;
                     }
+
                     _confirmedNodes.Add(message.SenderName);
                     if (_confirmedNodes.Count > NodesCount / 2)
                     {
                         CommitLog(message);
                         SendCommit(message);
                     }
-                    
+
                     break;
-                
+
                 case MessageType.LogUpdate:
                     break;
                 case MessageType.LogCommit:
@@ -58,7 +52,6 @@ namespace Raft.Election
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            
         }
 
         private void SendCommit(NodeMessage message)

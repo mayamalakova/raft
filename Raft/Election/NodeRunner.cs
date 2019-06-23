@@ -4,7 +4,6 @@ using System.Linq;
 using System.Timers;
 using NLog;
 using Raft.Entities;
-using Raft.View;
 
 namespace Raft.Election
 {
@@ -21,18 +20,27 @@ namespace Raft.Election
 
         public NodeRunner(string name, int electionTimeout, IMessageBroker broker)
         {
-            Broker = broker;
-            Broker.Register(this);
-            _timer = new Timer(electionTimeout * 10);
-
             Node = new Node(name);
             Status = NodeStatus.Follower;
             
-            var nodeViewer = new NodeViewer();
-            Node.Subscribe(nodeViewer);
+            Broker = broker;
+            Broker.Register(this);
+            _timer = new Timer(electionTimeout * 10);
         }
         
-        public virtual void ReceiveMessage(NodeMessage message)
+        public void ReceiveMessage(NodeMessage message)
+        {
+            if (Node.Name.Equals(message.SenderName))
+            {
+                return;
+            }
+
+            RestartElectionTimeout();
+            
+            RespondToMessage(message);
+        }
+
+        protected virtual void RespondToMessage(NodeMessage message)
         {
             switch (message.Type)
             {
@@ -43,11 +51,11 @@ namespace Raft.Election
 
                 case MessageType.LogUpdateReceived:
                     break;
-                
+
                 case MessageType.LogCommit:
                     CommitLog(message);
                     break;
-                
+
                 case MessageType.ValueUpdate:
                     break;
                 case MessageType.Info:
@@ -95,7 +103,7 @@ namespace Raft.Election
             };
         }
 
-        protected void RestartElectionTimeout()
+        private void RestartElectionTimeout()
         {
             _timer.Stop();
             _timer.Start();
@@ -106,5 +114,9 @@ namespace Raft.Election
             return _log.Count > 0 ? _log.Last() : null;
         }
         
+        public void Subscribe(INodeSubscriber subscriber)
+        {
+            Node.Subscribe(subscriber);
+        }
     }
 }
