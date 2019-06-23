@@ -9,6 +9,8 @@ namespace Raft.Election
 {
     public class NodeRunner: IMessageBrokerListener
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        
         private readonly Timer _timer;
         protected readonly IMessageBroker Broker;
         protected Node Node { get; }
@@ -53,7 +55,8 @@ namespace Raft.Election
 
         private void ConfirmLogUpdate(Guid entryId)
         {
-            Console.WriteLine($"node {Node.Name} confirms {entryId}");
+            Logger.Debug($"node {Node.Name} confirms {entryId}");
+            
             var nodeMessage = new NodeMessage(null, MessageType.LogUpdateReceived, Node.Name, entryId);
             Broker.Broadcast(nodeMessage);
         }
@@ -71,7 +74,8 @@ namespace Raft.Election
             {
                 return;
             }
-            Console.WriteLine($"{Node.Name} committing {message.Id}");
+            Logger.Debug($"{Node.Name} committing {message.Id}");
+            
             logEntry.Type = OperationType.Commit;
             Node.Value = logEntry.Value;
         }
@@ -83,7 +87,7 @@ namespace Raft.Election
             
             _timer.Elapsed += (sender, args) =>
             {
-//                Console.WriteLine($"node {Node.Name} - timer elapsed");
+                Logger.Trace($"node {Node.Name} - timer elapsed");
             };
         }
 
