@@ -16,20 +16,7 @@ namespace Raft.Election
             Status = NodeStatus.Leader;    
         }
 
-        public override void ReceiveMessage(NodeMessage message)
-        {
-            if (Node.Name.Equals(message.SenderName))
-            {
-                return;
-            }
-
-            RestartElectionTimeout();
-            
-            RespondToMessage(message);
-            
-        }
-
-        private void RespondToMessage(NodeMessage message)
+        protected override void RespondToMessage(NodeMessage message)
         {
             switch (message.Type)
             {

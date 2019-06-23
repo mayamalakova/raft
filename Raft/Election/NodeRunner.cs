@@ -32,7 +32,19 @@ namespace Raft.Election
             Node.Subscribe(nodeViewer);
         }
         
-        public virtual void ReceiveMessage(NodeMessage message)
+        public void ReceiveMessage(NodeMessage message)
+        {
+            if (Node.Name.Equals(message.SenderName))
+            {
+                return;
+            }
+
+            RestartElectionTimeout();
+            
+            RespondToMessage(message);
+        }
+
+        protected virtual void RespondToMessage(NodeMessage message)
         {
             switch (message.Type)
             {
@@ -43,11 +55,11 @@ namespace Raft.Election
 
                 case MessageType.LogUpdateReceived:
                     break;
-                
+
                 case MessageType.LogCommit:
                     CommitLog(message);
                     break;
-                
+
                 case MessageType.ValueUpdate:
                     break;
                 case MessageType.Info:
@@ -95,7 +107,7 @@ namespace Raft.Election
             };
         }
 
-        protected void RestartElectionTimeout()
+        private void RestartElectionTimeout()
         {
             _timer.Stop();
             _timer.Start();
