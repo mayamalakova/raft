@@ -21,12 +21,12 @@ namespace Raft.Election
 
         public NodeRunner(string name, int electionTimeout, IMessageBroker broker)
         {
+            Node = new Node(name);
+            Status = NodeStatus.Follower;
+            
             Broker = broker;
             Broker.Register(this);
             _timer = new Timer(electionTimeout * 10);
-
-            Node = new Node(name);
-            Status = NodeStatus.Follower;
             
             var nodeViewer = new NodeViewer();
             Node.Subscribe(nodeViewer);
