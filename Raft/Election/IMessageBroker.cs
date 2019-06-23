@@ -6,5 +6,8 @@ namespace Raft.Election
         void Broadcast(string newValue);
         
         void Register(IMessageBrokerListener listener);
+        
+        void Disconnect(string node);
+        void Connect(string node);
     }
 }

@@ -15,6 +15,7 @@ namespace Raft.Election
         protected readonly IMessageBroker Broker;
         protected Node Node { get; }
         protected NodeStatus Status { get; set; }
+        public string Name => Node.Name;
 
         private readonly Collection<LogEntry> _log = new Collection<LogEntry>();
 
@@ -38,6 +39,11 @@ namespace Raft.Election
             RestartElectionTimeout();
             
             RespondToMessage(message);
+        }
+
+        public virtual void DisplayStatus()
+        {
+            Console.WriteLine($"{Name} - {Node.Value}");
         }
 
         protected virtual void RespondToMessage(NodeMessage message)

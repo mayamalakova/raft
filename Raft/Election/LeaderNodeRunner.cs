@@ -53,6 +53,11 @@ namespace Raft.Election
                     throw new ArgumentOutOfRangeException();
             }
         }
+        
+        public override void DisplayStatus()
+        {
+            Console.WriteLine($"{Name} (leader)- {Node.Value}");
+        }
 
         private void SendCommit(NodeMessage message)
         {

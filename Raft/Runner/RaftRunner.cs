@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using NLog;
 using NLog.Config;
@@ -12,9 +13,9 @@ namespace Raft.Runner
 {
     public class RaftRunner
     {
-        private bool _keepRunning = true;
         private static readonly TimeoutGenerator TimeoutGenerator = new TimeoutGenerator();
         private readonly IMessageBroker _messageBroker = new MessageBroker();
+        private readonly Collection<IMessageBrokerListener> _nodeRunners = new Collection<IMessageBrokerListener>();
 
         public void Run()
         {
@@ -25,20 +26,76 @@ namespace Raft.Runner
             StartNode("B");
             StartNode("C");
 
-            while (_keepRunning)
+            while (true)
             {
-                Console.WriteLine("Client message:");
-                var newValue = Console.ReadLine();
+                var command = Console.ReadLine();
 
-                if (string.IsNullOrEmpty(newValue))
+                if (string.IsNullOrEmpty(command))
                 {
-                    _keepRunning = false;
+                    return;
+                }
+
+                if (command.Equals("?"))
+                {
+                    ShowHelp();
+                }
+                else if (command.StartsWith("value"))
+                {
+                    UpdateValue(command);
+                }
+                else if (command.StartsWith("status"))
+                {
+                    DisplayStatus();
+                }
+                else if (command.StartsWith("disconnect"))
+                {
+                    DisconnectNode(command);
+                }
+                else if (command.StartsWith("connect"))
+                {
+                    ConnectNode(command);
                 }
                 else
                 {
-                    _messageBroker.Broadcast(newValue);
+                    Console.WriteLine("Write ? and press Enter to see the options, or press Enter to exit");
                 }
             }
+        }
+
+        private void DisplayStatus()
+        {
+            foreach (var nodeRunner in _nodeRunners)
+            {
+                nodeRunner.DisplayStatus();
+            }
+        }
+
+        private void ConnectNode(string command)
+        {
+            var entries = command.Split(' ');
+            _messageBroker.Connect(entries[1]);
+        }
+
+        private void DisconnectNode(string command)
+        {
+            var entries = command.Split(' ');
+            _messageBroker.Disconnect(entries[1]);
+        }
+
+        private void UpdateValue(string command)
+        {
+            var entries = command.Split(' ');
+            var value = entries[1];
+            _messageBroker.Broadcast(value);
+        }
+
+        private static void ShowHelp()
+        {
+            Console.WriteLine("You can use the following commands: ");
+            Console.WriteLine("status - to see the current node values ");
+            Console.WriteLine("value - to enter new value ");
+            Console.WriteLine("disconnect - to disconnect a node");
+            Console.WriteLine("connect - to reconnect a node");
         }
 
         private void ConfigureLogging()
@@ -78,10 +135,11 @@ namespace Raft.Runner
 
         private void StartLeaderNode(string name)
         {
+            var nodeRunner = new LeaderNodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
+            _nodeRunners.Add(nodeRunner);
             var task = new Task(() =>
             {
-                var nodeRunner = new LeaderNodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
-                nodeRunner.Subscribe(new NodeViewer());
+//                nodeRunner.Subscribe(new NodeViewer());
                 nodeRunner.Start();
             });
             task.Start();
@@ -89,10 +147,11 @@ namespace Raft.Runner
 
         private void StartNode(string name)
         {
+            var nodeRunner = new NodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
+            _nodeRunners.Add(nodeRunner);
             var task = new Task(() =>
             {
-                var nodeRunner = new NodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
-                nodeRunner.Subscribe(new NodeViewer());
+//                nodeRunner.Subscribe(new NodeViewer());
                 nodeRunner.Start();
             });
             task.Start();

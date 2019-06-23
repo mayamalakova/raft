@@ -10,6 +10,7 @@ namespace Raft.Entities
 
         public string Value
         {
+            get => _value;
             set
             {
                 _value = value;
