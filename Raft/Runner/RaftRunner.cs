@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -42,27 +43,56 @@ namespace Raft.Runner
         private void ConfigureLogging()
         {
             var config = new LoggingConfiguration();
-            var fileTarget = new FileTarget("target2")
-            {
-                FileName = "${basedir}/raft.log",
-                Layout = "${longdate} ${level} ${message}  ${exception}"
-            };
+
+            var fileTarget = CreateFileTarget();
+            var consoleTarget = CreateConsoleTarget();
             config.AddTarget(fileTarget);
-            config.AddRuleForAllLevels(fileTarget);
+            config.AddTarget(consoleTarget);
+
+            config.AddRuleForOneLevel(LogLevel.Debug, fileTarget);
+            config.AddRuleForOneLevel(LogLevel.Info, fileTarget);
+            config.AddRuleForOneLevel(LogLevel.Warn, fileTarget);
+            config.AddRuleForOneLevel(LogLevel.Error, fileTarget);
+            config.AddRuleForOneLevel(LogLevel.Fatal, fileTarget);
 
             LogManager.Configuration = config;
         }
 
+        private ColoredConsoleTarget CreateConsoleTarget()
+        {
+            return new ColoredConsoleTarget("target1")
+            {
+                Layout = @"${date:format=HH\:mm\:ss} ${level} ${message} ${exception}"
+            };
+        }
+
+        private static FileTarget CreateFileTarget()
+        {
+            return new FileTarget("target2")
+            {
+                FileName = "${basedir}/raft.log",
+                Layout = "${longdate} ${level} ${message}  ${exception}"
+            };
+        }
+
         private void StartLeaderNode(string name)
         {
-            var node = new LeaderNodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
-            node.Start();
+            var task = new Task(() =>
+            {
+                var node = new LeaderNodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
+                node.Start();
+            });
+            task.Start();
         }
 
         private void StartNode(string name)
         {
-            var node = new NodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
-            node.Start();
+            var task = new Task(() =>
+            {
+                var node = new NodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
+                node.Start();
+            });
+            task.Start();
         }
     }
 }
