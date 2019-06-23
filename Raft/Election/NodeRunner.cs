@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Timers;
+using NLog;
 using Raft.Entities;
 
 namespace Raft.Election
@@ -72,7 +73,7 @@ namespace Raft.Election
             }
             Console.WriteLine($"{Node.Name} committing {message.Id}");
             logEntry.Type = OperationType.Commit;
-            Node.Value = message.Value;
+            Node.Value = logEntry.Value;
         }
 
         public void Start()
