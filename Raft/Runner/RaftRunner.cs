@@ -12,7 +12,6 @@ namespace Raft.Runner
 {
     public class RaftRunner
     {
-        private bool _keepRunning = true;
         private static readonly TimeoutGenerator TimeoutGenerator = new TimeoutGenerator();
         private readonly IMessageBroker _messageBroker = new MessageBroker();
 
@@ -25,18 +24,41 @@ namespace Raft.Runner
             StartNode("B");
             StartNode("C");
 
-            while (_keepRunning)
+            while (true)
             {
-                Console.WriteLine("Client message:");
-                var newValue = Console.ReadLine();
+                var command = Console.ReadLine();
 
-                if (string.IsNullOrEmpty(newValue))
+                if (string.IsNullOrEmpty(command))
                 {
-                    _keepRunning = false;
+                    return;
+                }
+
+                if (command.Equals("?"))
+                {
+                    Console.WriteLine("You can use the following commands: " +
+                                      "value - to enter new value, /n" +
+                                      "disconnect - to disconnect a node, /n" +
+                                      "connect - to reconnect a node");
+                    
+                } else if (command.StartsWith("value"))
+                {
+                    var entries = command.Split(' ');
+                    var value = entries[1];
+                    _messageBroker.Broadcast(value);
+                    
+                } else if (command.StartsWith("disconnect"))
+                {
+                    var entries = command.Split(' ');
+                    _messageBroker.Disconnect(entries[1]);
+                    
+                } else if (command.StartsWith("connect"))
+                {
+                    var entries = command.Split(' ');
+                    _messageBroker.Connect(entries[1]);
                 }
                 else
                 {
-                    _messageBroker.Broadcast(newValue);
+                    Console.WriteLine("Write ? and press Enter to see the options, or press Enter to exit");
                 }
             }
         }

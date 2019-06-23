@@ -40,6 +40,8 @@ namespace Raft.Election
             RespondToMessage(message);
         }
 
+        public string Name => Node.Name;
+
         protected virtual void RespondToMessage(NodeMessage message)
         {
             switch (message.Type)
