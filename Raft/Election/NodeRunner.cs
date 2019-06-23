@@ -4,6 +4,7 @@ using System.Linq;
 using System.Timers;
 using NLog;
 using Raft.Entities;
+using Raft.View;
 
 namespace Raft.Election
 {
@@ -26,6 +27,9 @@ namespace Raft.Election
 
             Node = new Node(name);
             Status = NodeStatus.Follower;
+            
+            var nodeViewer = new NodeViewer();
+            Node.Subscribe(nodeViewer);
         }
         
         public virtual void ReceiveMessage(NodeMessage message)
