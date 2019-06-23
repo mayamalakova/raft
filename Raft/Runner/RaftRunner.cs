@@ -1,4 +1,7 @@
 using System;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 using Raft.Communication;
 using Raft.Election;
 using Raft.Time;
@@ -13,11 +16,13 @@ namespace Raft.Runner
 
         public void Run()
         {
+            ConfigureLogging();
+
             StartLeaderNode("L");
             StartNode("A");
             StartNode("B");
             StartNode("C");
-           
+
             while (_keepRunning)
             {
                 Console.WriteLine("Client message:");
@@ -32,6 +37,20 @@ namespace Raft.Runner
                     _messageBroker.Broadcast(newValue);
                 }
             }
+        }
+
+        private void ConfigureLogging()
+        {
+            var config = new LoggingConfiguration();
+            var fileTarget = new FileTarget("target2")
+            {
+                FileName = "${basedir}/raft.log",
+                Layout = "${longdate} ${level} ${message}  ${exception}"
+            };
+            config.AddTarget(fileTarget);
+            config.AddRuleForAllLevels(fileTarget);
+
+            LogManager.Configuration = config;
         }
 
         private void StartLeaderNode(string name)
