@@ -4,7 +4,6 @@ using System.Linq;
 using System.Timers;
 using NLog;
 using Raft.Entities;
-using Raft.View;
 
 namespace Raft.Election
 {
@@ -27,9 +26,6 @@ namespace Raft.Election
             Broker = broker;
             Broker.Register(this);
             _timer = new Timer(electionTimeout * 10);
-            
-            var nodeViewer = new NodeViewer();
-            Node.Subscribe(nodeViewer);
         }
         
         public void ReceiveMessage(NodeMessage message)
@@ -118,5 +114,9 @@ namespace Raft.Election
             return _log.Count > 0 ? _log.Last() : null;
         }
         
+        public void Subscribe(INodeSubscriber subscriber)
+        {
+            Node.Subscribe(subscriber);
+        }
     }
 }
