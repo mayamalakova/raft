@@ -13,7 +13,7 @@ namespace Raft.Test.Election
         private const string TestValue = "test-message";
         
         [Test]
-        public void UpdateLog_OnValueUpdate()
+        public void UpdateLog_OnLogUpdate()
         {
             var messageBroker = Substitute.For<IMessageBroker>();
             var nodeRunner = new NodeRunner("test", 100, messageBroker);
