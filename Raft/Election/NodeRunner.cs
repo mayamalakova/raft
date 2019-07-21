@@ -16,8 +16,7 @@ namespace Raft.Election
         protected Node Node { get; }
         protected NodeStatus Status { get; set; }
         public string Name => Node.Name;
-
-        private readonly Collection<LogEntry> _log = new Collection<LogEntry>();
+        public Collection<LogEntry> Log { get; } = new Collection<LogEntry>();
 
         public NodeRunner(string name, int electionTimeout, IMessageBroker broker)
         {
@@ -82,7 +81,7 @@ namespace Raft.Election
         protected void UpdateLog(NodeMessage message, Guid entryId)
         {
             var logEntry = new LogEntry(OperationType.Update, message.Value, entryId);
-            _log.Add(logEntry);
+            Log.Add(logEntry);
         }
         
         protected void CommitLog(NodeMessage message)
@@ -117,7 +116,7 @@ namespace Raft.Election
         
         protected LogEntry LastLogEntry()
         {
-            return _log.Count > 0 ? _log.Last() : null;
+            return Log.Count > 0 ? Log.Last() : null;
         }
         
         public void Subscribe(INodeSubscriber subscriber)
