@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using NLog;
@@ -10,27 +9,14 @@ namespace Raft.Entities
     public class Node
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        
-        private string _value;
-        
-        private readonly ICollection<INodeSubscriber> _subscribers = new List<INodeSubscriber>();
-        
+
+        private IMessageBroker Broker { get; }
+
         public string Name { get; }
         
         public Collection<LogEntry> Log { get; } = new Collection<LogEntry>();
 
-        public string Value
-        {
-            get => _value;
-            set
-            {
-                _value = value;
-                foreach (var subscriber in _subscribers)
-                {
-                    subscriber.NodeValueChanged(Name, value);
-                }
-            }
-        }
+        public string Value { get; private set; }
 
         public Node(string name, string value)
         {
@@ -38,9 +24,10 @@ namespace Raft.Entities
             Name = name;
         }
 
-        public Node(string name)
+        public Node(string name, IMessageBroker messageBroker)
         {
             Name = name;
+            Broker = messageBroker;
         }
 
         public void UpdateLog(NodeMessage message, Guid entryId)
@@ -67,9 +54,27 @@ namespace Raft.Entities
             return Log.Count > 0 ? Log.Last() : null;
         }
 
-        public void Subscribe(INodeSubscriber subscriber)
+        internal void ConfirmLogUpdate(Guid entryId)
         {
-            _subscribers.Add(subscriber);
+            Logger.Debug($"node {Name} confirms {entryId}");
+            
+            var nodeMessage = new NodeMessage(null, MessageType.LogUpdateConfirmation, Name, entryId);
+            Broker.Broadcast(nodeMessage);
         }
+
+        internal void SendCommit(NodeMessage message)
+        {
+            var nodeMessage = new NodeMessage(message.Value, MessageType.LogCommit, Name, message.Id);
+            Broker.Broadcast(nodeMessage);
+        }
+
+        internal void SendLogUpdateRequest(NodeMessage message, Guid entryId)
+        {
+            Logger.Debug($"{Name} initiating update {entryId}");
+            
+            var logUpdate = new NodeMessage(message.Value, MessageType.LogUpdate, Name, entryId);
+            Broker.Broadcast(logUpdate);
+        }
+
     }
 }

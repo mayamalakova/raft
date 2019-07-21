@@ -1,3 +1,5 @@
+using Raft.Entities;
+
 namespace Raft.Election
 {
     public interface IMessageBrokerListener

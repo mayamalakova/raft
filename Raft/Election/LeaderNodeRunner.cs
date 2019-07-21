@@ -5,16 +5,17 @@ using Raft.Entities;
 
 namespace Raft.Election
 {
-    public class LeaderNodeRunner: NodeRunner
+    public class LeaderNodeRunner : NodeRunner
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        
-        private readonly HashSet<string> _confirmedNodes = new HashSet<string>();
-        public int NodesCount { get; set;  } = 3;
 
-        public LeaderNodeRunner(Node node, int electionTimeout, IMessageBroker messageBroker) : base(node, electionTimeout, messageBroker)
+        private readonly HashSet<string> _confirmedNodes = new HashSet<string>();
+        public int NodesCount { private get; set; } = 3;
+
+        public LeaderNodeRunner(Node node, int electionTimeout) : base(node,
+            electionTimeout)
         {
-            Status = NodeStatus.Leader;    
+            Status = NodeStatus.Leader;
         }
 
         protected override void RespondToMessage(NodeMessage message)
@@ -26,7 +27,7 @@ namespace Raft.Election
 
                     var entryId = Guid.NewGuid();
                     Node.UpdateLog(message, entryId);
-                    SendLogUpdateRequest(message, entryId);
+                    Node.SendLogUpdateRequest(message, entryId);
                     break;
 
                 case MessageType.LogUpdateConfirmation:
@@ -39,7 +40,7 @@ namespace Raft.Election
                     if (_confirmedNodes.Count > NodesCount / 2)
                     {
                         Node.CommitLog(message);
-                        SendCommit(message);
+                        Node.SendCommit(message);
                     }
 
                     break;
@@ -54,25 +55,10 @@ namespace Raft.Election
                     throw new ArgumentOutOfRangeException();
             }
         }
-        
+
         public override void DisplayStatus()
         {
             Console.WriteLine($"{Name} (leader)- {Node.Value}");
         }
-
-        private void SendCommit(NodeMessage message)
-        {
-            var nodeMessage = new NodeMessage(message.Value, MessageType.LogCommit, Node.Name, message.Id);
-            Broker.Broadcast(nodeMessage);
-        }
-
-        private void SendLogUpdateRequest(NodeMessage message, Guid entryId)
-        {
-            Logger.Debug($"{Node.Name} initiating update {entryId}");
-            
-            var logUpdate = new NodeMessage(message.Value, MessageType.LogUpdate, Node.Name, entryId);
-            Broker.Broadcast(logUpdate);
-        }
-
     }
 }

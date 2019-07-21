@@ -1,6 +1,4 @@
 using System;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Timers;
 using NLog;
 using Raft.Entities;
@@ -12,18 +10,15 @@ namespace Raft.Election
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         
         private readonly Timer _timer;
-        protected readonly IMessageBroker Broker;
         protected Node Node { get; }
         protected NodeStatus Status { get; set; }
         public string Name => Node.Name;
 
-        public NodeRunner(Node node, int electionTimeout, IMessageBroker broker)
+        public NodeRunner(Node node, int electionTimeout)
         {
             Node = node;
             Status = NodeStatus.Follower;
             
-            Broker = broker;
-            Broker.Register(this);
             _timer = new Timer(electionTimeout * 10);
         }
         
@@ -50,7 +45,7 @@ namespace Raft.Election
             {
                 case MessageType.LogUpdate:
                     Node.UpdateLog(message, message.Id);
-                    ConfirmLogUpdate(message.Id);
+                    Node.ConfirmLogUpdate(message.Id);
                     break;
 
                 case MessageType.LogUpdateConfirmation:
@@ -67,14 +62,6 @@ namespace Raft.Election
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
-
-        private void ConfirmLogUpdate(Guid entryId)
-        {
-            Logger.Debug($"node {Node.Name} confirms {entryId}");
-            
-            var nodeMessage = new NodeMessage(null, MessageType.LogUpdateConfirmation, Node.Name, entryId);
-            Broker.Broadcast(nodeMessage);
         }
 
         public void Start()
@@ -94,10 +81,5 @@ namespace Raft.Election
             _timer.Start();
         }
         
-        
-        public void Subscribe(INodeSubscriber subscriber)
-        {
-            Node.Subscribe(subscriber);
-        }
     }
 }

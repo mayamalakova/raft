@@ -136,7 +136,8 @@ namespace Raft.Runner
 
         private void StartLeaderNode(string name)
         {
-            var nodeRunner = new LeaderNodeRunner(new Node(name), TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
+            var node = new Node(name, _messageBroker);
+            var nodeRunner = new LeaderNodeRunner(node, TimeoutGenerator.GenerateElectionTimeout());
             _nodeRunners.Add(nodeRunner);
             var task = new Task(() =>
             {
@@ -148,7 +149,8 @@ namespace Raft.Runner
 
         private void StartNode(string name)
         {
-            var nodeRunner = new NodeRunner(new Node(name), TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
+            var node = new Node(name, _messageBroker);
+            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout());
             _nodeRunners.Add(nodeRunner);
             var task = new Task(() =>
             {

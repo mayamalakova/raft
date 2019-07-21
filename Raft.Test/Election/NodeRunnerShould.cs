@@ -20,8 +20,8 @@ namespace Raft.Test.Election
         public void SetUp()
         {
             _messageBroker = Substitute.For<IMessageBroker>();
-            _node = new Node("test");
-            _nodeRunner = new NodeRunner(_node, 100, _messageBroker);
+            _node = new Node("test", _messageBroker);
+            _nodeRunner = new NodeRunner(_node, 100);
         }
         
         [Test]

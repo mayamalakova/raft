@@ -1,4 +1,6 @@
-namespace Raft.Election
+using Raft.Election;
+
+namespace Raft.Entities
 {
     public interface IMessageBroker
     {

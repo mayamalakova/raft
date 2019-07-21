@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using Raft.Election;
+using Raft.Entities;
 
 namespace Raft.Communication
 {
