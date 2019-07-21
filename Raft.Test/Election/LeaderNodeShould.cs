@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
 using Raft.Election;
@@ -7,7 +8,6 @@ using Shouldly;
 
 namespace Raft.Test.Election
 {
-    [TestFixture]
     public class LeaderNodeShould
     {
         private const string TestValue = "test-message";
@@ -41,7 +41,27 @@ namespace Raft.Test.Election
             _leaderNodeRunner.ReceiveMessage(message);
             
             _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.LogUpdate));
-            
         }
+
+        [Test]
+        public void CommitUpdate_WhenMajorityConfirmsLogUpdate()
+        {
+            _leaderNodeRunner.NodesCount = 3;
+            var updateId = Guid.NewGuid();
+            _leaderNodeRunner.Log.Add(new LogEntry(OperationType.Update, TestValue, updateId));
+            
+            var messageA = new NodeMessage(TestValue, MessageType.LogUpdateConfirmation, "A", updateId);
+            var messageB = new NodeMessage(TestValue, MessageType.LogUpdateConfirmation, "B", updateId);
+            
+            _leaderNodeRunner.ReceiveMessage(messageA);
+            _leaderNodeRunner.Log.Last().Type.ShouldBe(OperationType.Update);
+            _messageBroker.DidNotReceiveWithAnyArgs().Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.LogCommit));
+            
+            _leaderNodeRunner.ReceiveMessage(messageB);
+            _leaderNodeRunner.Log.Last().Type.ShouldBe(OperationType.Commit);
+            _leaderNodeRunner.Node.Value.ShouldBe(TestValue);
+            _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.LogCommit));
+        }
+        
     }
 }

@@ -13,7 +13,7 @@ namespace Raft.Election
         
         private readonly Timer _timer;
         protected readonly IMessageBroker Broker;
-        protected Node Node { get; }
+        public Node Node { get; }
         protected NodeStatus Status { get; set; }
         public string Name => Node.Name;
         public Collection<LogEntry> Log { get; } = new Collection<LogEntry>();
