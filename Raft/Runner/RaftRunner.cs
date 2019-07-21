@@ -7,7 +7,6 @@ using NLog.Targets;
 using Raft.Communication;
 using Raft.Election;
 using Raft.Time;
-using Raft.View;
 
 namespace Raft.Runner
 {
@@ -42,6 +41,7 @@ namespace Raft.Runner
                 else if (command.StartsWith("value"))
                 {
                     UpdateValue(command);
+                    DisplayStatus();
                 }
                 else if (command.StartsWith("status"))
                 {
