@@ -28,7 +28,7 @@ namespace Raft.Election
                     SendLogUpdateRequest(message, entryId);
                     break;
 
-                case MessageType.LogUpdateReceived:
+                case MessageType.LogUpdateConfirmation:
                     if (message.Id != LastLogEntry().Id)
                     {
                         return;

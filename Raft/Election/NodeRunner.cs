@@ -54,7 +54,7 @@ namespace Raft.Election
                     ConfirmLogUpdate(message.Id);
                     break;
 
-                case MessageType.LogUpdateReceived:
+                case MessageType.LogUpdateConfirmation:
                     break;
 
                 case MessageType.LogCommit:
@@ -74,7 +74,7 @@ namespace Raft.Election
         {
             Logger.Debug($"node {Node.Name} confirms {entryId}");
             
-            var nodeMessage = new NodeMessage(null, MessageType.LogUpdateReceived, Node.Name, entryId);
+            var nodeMessage = new NodeMessage(null, MessageType.LogUpdateConfirmation, Node.Name, entryId);
             Broker.Broadcast(nodeMessage);
         }
 
