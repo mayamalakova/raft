@@ -13,14 +13,13 @@ namespace Raft.Election
         
         private readonly Timer _timer;
         protected readonly IMessageBroker Broker;
-        public Node Node { get; }
+        protected Node Node { get; }
         protected NodeStatus Status { get; set; }
         public string Name => Node.Name;
-        public Collection<LogEntry> Log { get; } = new Collection<LogEntry>();
 
-        public NodeRunner(string name, int electionTimeout, IMessageBroker broker)
+        public NodeRunner(Node node, int electionTimeout, IMessageBroker broker)
         {
-            Node = new Node(name);
+            Node = node;
             Status = NodeStatus.Follower;
             
             Broker = broker;
@@ -50,7 +49,7 @@ namespace Raft.Election
             switch (message.Type)
             {
                 case MessageType.LogUpdate:
-                    UpdateLog(message, message.Id);
+                    Node.UpdateLog(message, message.Id);
                     ConfirmLogUpdate(message.Id);
                     break;
 
@@ -58,7 +57,7 @@ namespace Raft.Election
                     break;
 
                 case MessageType.LogCommit:
-                    CommitLog(message);
+                    Node.CommitLog(message);
                     break;
 
                 case MessageType.ValueUpdate:
@@ -78,25 +77,6 @@ namespace Raft.Election
             Broker.Broadcast(nodeMessage);
         }
 
-        protected void UpdateLog(NodeMessage message, Guid entryId)
-        {
-            var logEntry = new LogEntry(OperationType.Update, message.Value, entryId);
-            Log.Add(logEntry);
-        }
-        
-        protected void CommitLog(NodeMessage message)
-        {
-            var logEntry = LastLogEntry();
-            if (logEntry?.Id != message.Id || logEntry.Type == OperationType.Commit)
-            {
-                return;
-            }
-            Logger.Debug($"{Node.Name} committing {message.Id}");
-            
-            logEntry.Type = OperationType.Commit;
-            Node.Value = logEntry.Value;
-        }
-
         public void Start()
         {
             _timer.Start();
@@ -114,10 +94,6 @@ namespace Raft.Election
             _timer.Start();
         }
         
-        protected LogEntry LastLogEntry()
-        {
-            return Log.Count > 0 ? Log.Last() : null;
-        }
         
         public void Subscribe(INodeSubscriber subscriber)
         {

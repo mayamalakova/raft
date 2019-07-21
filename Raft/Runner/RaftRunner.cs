@@ -6,6 +6,7 @@ using NLog.Config;
 using NLog.Targets;
 using Raft.Communication;
 using Raft.Election;
+using Raft.Entities;
 using Raft.Time;
 
 namespace Raft.Runner
@@ -135,7 +136,7 @@ namespace Raft.Runner
 
         private void StartLeaderNode(string name)
         {
-            var nodeRunner = new LeaderNodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
+            var nodeRunner = new LeaderNodeRunner(new Node(name), TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
             _nodeRunners.Add(nodeRunner);
             var task = new Task(() =>
             {
@@ -147,7 +148,7 @@ namespace Raft.Runner
 
         private void StartNode(string name)
         {
-            var nodeRunner = new NodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
+            var nodeRunner = new NodeRunner(new Node(name), TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
             _nodeRunners.Add(nodeRunner);
             var task = new Task(() =>
             {

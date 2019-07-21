@@ -14,12 +14,14 @@ namespace Raft.Test.Election
         
         private LeaderNodeRunner _leaderNodeRunner;
         private IMessageBroker _messageBroker;
+        private Node _node;
 
         [SetUp]
         public void SetUp()
         {
             _messageBroker = Substitute.For<IMessageBroker>();
-            _leaderNodeRunner = new LeaderNodeRunner("test", 100, _messageBroker);
+            _node = new Node("test");
+            _leaderNodeRunner = new LeaderNodeRunner(_node, 100, _messageBroker);
         }
         
         [Test]
@@ -28,10 +30,9 @@ namespace Raft.Test.Election
             var message = new NodeMessage(TestValue, MessageType.ValueUpdate, null, Guid.Empty);
             _leaderNodeRunner.ReceiveMessage(message);
             
-            _leaderNodeRunner.Log.Count.ShouldBe(1);
-            _leaderNodeRunner.Log[0].Value.ShouldBe(TestValue);
-            _leaderNodeRunner.Log[0].Type.ShouldBe(OperationType.Update);
-            
+            _node.Log.Count.ShouldBe(1);
+            _node.Log[0].Value.ShouldBe(TestValue);
+            _node.Log[0].Type.ShouldBe(OperationType.Update);
         }
         
         [Test]
@@ -48,18 +49,18 @@ namespace Raft.Test.Election
         {
             _leaderNodeRunner.NodesCount = 3;
             var updateId = Guid.NewGuid();
-            _leaderNodeRunner.Log.Add(new LogEntry(OperationType.Update, TestValue, updateId));
+            _node.Log.Add(new LogEntry(OperationType.Update, TestValue, updateId));
             
             var messageA = new NodeMessage(TestValue, MessageType.LogUpdateConfirmation, "A", updateId);
             var messageB = new NodeMessage(TestValue, MessageType.LogUpdateConfirmation, "B", updateId);
             
             _leaderNodeRunner.ReceiveMessage(messageA);
-            _leaderNodeRunner.Log.Last().Type.ShouldBe(OperationType.Update);
+            _node.Log.Last().Type.ShouldBe(OperationType.Update);
             _messageBroker.DidNotReceiveWithAnyArgs().Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.LogCommit));
             
             _leaderNodeRunner.ReceiveMessage(messageB);
-            _leaderNodeRunner.Log.Last().Type.ShouldBe(OperationType.Commit);
-            _leaderNodeRunner.Node.Value.ShouldBe(TestValue);
+            _node.Log.Last().Type.ShouldBe(OperationType.Commit);
+            _node.Value.ShouldBe(TestValue);
             _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.LogCommit));
         }
         

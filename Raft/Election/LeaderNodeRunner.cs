@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NLog;
+using Raft.Entities;
 
 namespace Raft.Election
 {
@@ -11,7 +12,7 @@ namespace Raft.Election
         private readonly HashSet<string> _confirmedNodes = new HashSet<string>();
         public int NodesCount { get; set;  } = 3;
 
-        public LeaderNodeRunner(string name, int electionTimeout, IMessageBroker messageBroker) : base(name, electionTimeout, messageBroker)
+        public LeaderNodeRunner(Node node, int electionTimeout, IMessageBroker messageBroker) : base(node, electionTimeout, messageBroker)
         {
             Status = NodeStatus.Leader;    
         }
@@ -24,12 +25,12 @@ namespace Raft.Election
                     Logger.Debug($"Leader {Node.Name} got value {message.Value}");
 
                     var entryId = Guid.NewGuid();
-                    UpdateLog(message, entryId);
+                    Node.UpdateLog(message, entryId);
                     SendLogUpdateRequest(message, entryId);
                     break;
 
                 case MessageType.LogUpdateConfirmation:
-                    if (message.Id != LastLogEntry().Id)
+                    if (message.Id != Node.LastLogEntry().Id)
                     {
                         return;
                     }
@@ -37,7 +38,7 @@ namespace Raft.Election
                     _confirmedNodes.Add(message.SenderName);
                     if (_confirmedNodes.Count > NodesCount / 2)
                     {
-                        CommitLog(message);
+                        Node.CommitLog(message);
                         SendCommit(message);
                     }
 
