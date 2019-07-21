@@ -9,7 +9,7 @@ namespace Raft.Election
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         
         private readonly HashSet<string> _confirmedNodes = new HashSet<string>();
-        private const int NodesCount = 3;
+        public int NodesCount { get; set;  } = 3;
 
         public LeaderNodeRunner(string name, int electionTimeout, IMessageBroker messageBroker) : base(name, electionTimeout, messageBroker)
         {
@@ -28,7 +28,7 @@ namespace Raft.Election
                     SendLogUpdateRequest(message, entryId);
                     break;
 
-                case MessageType.LogUpdateReceived:
+                case MessageType.LogUpdateConfirmation:
                     if (message.Id != LastLogEntry().Id)
                     {
                         return;
