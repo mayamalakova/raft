@@ -10,6 +10,7 @@ namespace Raft.Election
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         
         private readonly Timer _timer;
+        private readonly IMessageResponseStrategy _messageResponseStrategy;
         protected Node Node { get; }
         protected NodeStatus Status { get; set; }
         public string Name => Node.Name;
@@ -18,7 +19,8 @@ namespace Raft.Election
         {
             Node = node;
             Status = NodeStatus.Follower;
-            
+
+            _messageResponseStrategy = new FollowerMessageResponseStrategy(node);
             _timer = new Timer(electionTimeout * 10);
         }
         
@@ -41,27 +43,7 @@ namespace Raft.Election
 
         protected virtual void RespondToMessage(NodeMessage message)
         {
-            switch (message.Type)
-            {
-                case MessageType.LogUpdate:
-                    Node.UpdateLog(message, message.Id);
-                    Node.ConfirmLogUpdate(message.Id);
-                    break;
-
-                case MessageType.LogUpdateConfirmation:
-                    break;
-
-                case MessageType.LogCommit:
-                    Node.CommitLog(message);
-                    break;
-
-                case MessageType.ValueUpdate:
-                    break;
-                case MessageType.Info:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            _messageResponseStrategy.RespondToMessage(message);
         }
 
         public void Start()
