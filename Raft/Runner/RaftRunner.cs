@@ -138,24 +138,14 @@ namespace Raft.Runner
         {
             var nodeRunner = InitializeLeader(name);
             _nodeRunners.Add(nodeRunner);
-            var task = new Task(() =>
-            {
-//                nodeRunner.Subscribe(new NodeViewer());
-                nodeRunner.Start();
-            });
-            task.Start();
+            nodeRunner.Start();
         }
 
         private void StartNode(string name)
         {
             var nodeRunner = InitializeFollower(name);
             _nodeRunners.Add(nodeRunner);
-            var task = new Task(() =>
-            {
-//                nodeRunner.Subscribe(new NodeViewer());
-                nodeRunner.Start();
-            });
-            task.Start();
+            nodeRunner.Start();
         }
 
         public LeaderNodeRunner InitializeLeader(string name)
