@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Raft.Election;
 using Raft.Entities;
 
@@ -7,8 +6,9 @@ namespace Raft.NodeStrategy
 {
     public class LeaderMessageResponseStrategy: IMessageResponseStrategy
     {
+        private readonly LeaderStatus _status;
+
         private readonly int _nodesCount;
-        private readonly HashSet<string> _confirmedNodes = new HashSet<string>();
         private Node Node { get; }
         
 
@@ -16,6 +16,7 @@ namespace Raft.NodeStrategy
         {
             _nodesCount = nodesCount;
             Node = node;
+            _status = node.Status as LeaderStatus;
         }
         
         public void RespondToMessage(NodeMessage message)
@@ -34,8 +35,8 @@ namespace Raft.NodeStrategy
                         return;
                     }
 
-                    _confirmedNodes.Add(message.SenderName);
-                    if (_confirmedNodes.Count > _nodesCount / 2)
+                    _status.ConfirmedNodes.Add(message.SenderName);
+                    if (_status.ConfirmedNodes.Count > _nodesCount / 2)
                     {
                         Node.CommitLog(message);
                         Node.SendCommit(message);

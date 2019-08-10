@@ -18,7 +18,7 @@ namespace Raft.Entities
         public Collection<LogEntry> Log { get; } = new Collection<LogEntry>();
 
         public string Value { get; private set; }
-        public NodeStatus Status { get; set; }
+        public INodeStatus Status { get; set; }
 
         public Node(string name, string value)
         {

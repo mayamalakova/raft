@@ -23,7 +23,7 @@ namespace Raft.Test.Election
         public void SetUp()
         {
             _messageBroker = Substitute.For<IMessageBroker>();
-            _node = new Node(TestName, _messageBroker) {Status = NodeStatus.Follower};
+            _node = new Node(TestName, _messageBroker) {Status = new FollowerStatus()};
             _nodeRunner = new NodeRunner(_node, 100, new StrategySelector(3));
         }
         

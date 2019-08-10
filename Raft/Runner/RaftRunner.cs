@@ -150,7 +150,7 @@ namespace Raft.Runner
 
         public NodeRunner InitializeLeader(string name)
         {
-            var node = new Node(name, Broker) {Status = NodeStatus.Leader};
+            var node = new Node(name, Broker) {Status = new LeaderStatus()};
             var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(4));
             
             Broker.Register(nodeRunner);
@@ -159,7 +159,7 @@ namespace Raft.Runner
 
         public NodeRunner InitializeFollower(string name)
         {
-            var node = new Node(name, Broker) {Status = NodeStatus.Follower};
+            var node = new Node(name, Broker) {Status = new FollowerStatus()};
             var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(4));
             Broker.Register(nodeRunner);
             return nodeRunner;

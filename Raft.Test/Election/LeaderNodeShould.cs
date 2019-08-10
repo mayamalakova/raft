@@ -3,7 +3,6 @@ using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
 using Raft.Communication;
-using Raft.Election;
 using Raft.Entities;
 using Raft.NodeStrategy;
 using Shouldly;
@@ -23,7 +22,7 @@ namespace Raft.Test.Election
         public void SetUp()
         {
             _messageBroker = Substitute.For<IMessageBroker>();
-            _node = new Node(NodeName, _messageBroker) {Status = NodeStatus.Leader};
+            _node = new Node(NodeName, _messageBroker) {Status = new LeaderStatus()};
             _leaderNodeRunner = new NodeRunner(_node, 100, new StrategySelector(3));
         }
         

@@ -19,8 +19,7 @@ namespace Raft.Communication
 
         public override string ToString()
         {
-            var nodeStatus = Node.Status == NodeStatus.Leader ? "(leader) " : "";
-            return $"{Name} {nodeStatus}- {Node.Value}";
+            return $"{Name} {Node.Status} - {Node.Value}".Replace("  ", " ");
         }
 
         public NodeRunner(Node node, int electionTimeout, StrategySelector strategySelector)
@@ -56,7 +55,7 @@ namespace Raft.Communication
             {
                 Logger.Trace($"node {Node.Name} - timer elapsed");
                 Node.SendVoteRequest();
-                Node.Status = NodeStatus.Candidate;
+                Node.Status = new CandidateStatus();
             };
         }
 

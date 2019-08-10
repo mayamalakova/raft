@@ -19,7 +19,7 @@ namespace Raft.NodeStrategy
 
         public IMessageResponseStrategy SelectStrategy(Node node)
         {
-            switch (node.Status)
+            switch (node.Status.Name)
             {
                     case NodeStatus.Follower:
                         return new FollowerMessageResponseStrategy(node);
