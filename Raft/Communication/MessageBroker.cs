@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Raft.Election;
 using Raft.Entities;
@@ -10,6 +11,8 @@ namespace Raft.Communication
     {
         private readonly ConcurrentBag<IMessageBrokerListener> _listeners = new ConcurrentBag<IMessageBrokerListener>();
         private readonly Collection<string> _disconnectedNodes = new Collection<string>();
+        
+        public IEnumerable<IMessageBrokerListener> Listeners => _listeners;
 
         public void Broadcast(string newValue)
         {

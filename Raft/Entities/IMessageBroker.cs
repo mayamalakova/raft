@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Raft.Election;
 
 namespace Raft.Entities
@@ -11,5 +12,7 @@ namespace Raft.Entities
         
         void Disconnect(string node);
         void Connect(string node);
+
+        IEnumerable<IMessageBrokerListener> Listeners { get; }
     }
 }

@@ -14,8 +14,8 @@ namespace Raft.Runner
     public class RaftRunner
     {
         private static readonly TimeoutGenerator TimeoutGenerator = new TimeoutGenerator();
-        private readonly IMessageBroker _messageBroker = new MessageBroker();
         private readonly Collection<IMessageBrokerListener> _nodeRunners = new Collection<IMessageBrokerListener>();
+        public IMessageBroker Broker { get; } = new MessageBroker();
 
         public void Run()
         {
@@ -74,20 +74,20 @@ namespace Raft.Runner
         private void ConnectNode(string command)
         {
             var entries = command.Split(' ');
-            _messageBroker.Connect(entries[1]);
+            Broker.Connect(entries[1]);
         }
 
         private void DisconnectNode(string command)
         {
             var entries = command.Split(' ');
-            _messageBroker.Disconnect(entries[1]);
+            Broker.Disconnect(entries[1]);
         }
 
         private void UpdateValue(string command)
         {
             var entries = command.Split(' ');
             var value = entries[1];
-            _messageBroker.Broadcast(value);
+            Broker.Broadcast(value);
         }
 
         private static void ShowHelp()
@@ -136,8 +136,7 @@ namespace Raft.Runner
 
         private void StartLeaderNode(string name)
         {
-            var node = new Node(name, _messageBroker);
-            var nodeRunner = new LeaderNodeRunner(node, TimeoutGenerator.GenerateElectionTimeout());
+            var nodeRunner = InitializeLeader(name);
             _nodeRunners.Add(nodeRunner);
             var task = new Task(() =>
             {
@@ -149,8 +148,7 @@ namespace Raft.Runner
 
         private void StartNode(string name)
         {
-            var node = new Node(name, _messageBroker);
-            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout());
+            var nodeRunner = InitializeFollower(name);
             _nodeRunners.Add(nodeRunner);
             var task = new Task(() =>
             {
@@ -158,6 +156,22 @@ namespace Raft.Runner
                 nodeRunner.Start();
             });
             task.Start();
+        }
+
+        public LeaderNodeRunner InitializeLeader(string name)
+        {
+            var node = new Node(name, Broker);
+            var nodeRunner = new LeaderNodeRunner(node, TimeoutGenerator.GenerateElectionTimeout());
+            Broker.Register(nodeRunner);
+            return nodeRunner;
+        }
+
+        public NodeRunner InitializeFollower(string name)
+        {
+            var node = new Node(name, Broker);
+            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout());
+            Broker.Register(nodeRunner);
+            return nodeRunner;
         }
     }
 }
