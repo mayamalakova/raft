@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Raft.Election;
 using Raft.Entities;
 
-namespace Raft.Election
+namespace Raft.NodeStrategy
 {
     public class LeaderMessageResponseStrategy: IMessageResponseStrategy
     {

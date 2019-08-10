@@ -6,6 +6,7 @@ using NLog.Targets;
 using Raft.Communication;
 using Raft.Election;
 using Raft.Entities;
+using Raft.NodeStrategy;
 using Raft.Time;
 
 namespace Raft.Runner
@@ -150,10 +151,7 @@ namespace Raft.Runner
         public NodeRunner InitializeLeader(string name)
         {
             var node = new Node(name, Broker) {Status = NodeStatus.Leader};
-            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout())
-            {
-                MessageResponseStrategy = new LeaderMessageResponseStrategy(node, 4)
-            };
+            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(4));
             
             Broker.Register(nodeRunner);
             return nodeRunner;
@@ -162,10 +160,7 @@ namespace Raft.Runner
         public NodeRunner InitializeFollower(string name)
         {
             var node = new Node(name, Broker) {Status = NodeStatus.Follower};
-            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout())
-            {
-                MessageResponseStrategy = new FollowerMessageResponseStrategy(node)
-            };
+            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(4));
             Broker.Register(nodeRunner);
             return nodeRunner;
         }

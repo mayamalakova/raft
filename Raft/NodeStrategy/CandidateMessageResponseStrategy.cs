@@ -1,6 +1,6 @@
 using Raft.Entities;
 
-namespace Raft.Election
+namespace Raft.NodeStrategy
 {
     public class CandidateMessageResponseStrategy : FollowerMessageResponseStrategy
     {

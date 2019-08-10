@@ -1,15 +1,19 @@
 using System.Timers;
 using NLog;
+using Raft.Election;
 using Raft.Entities;
+using Raft.NodeStrategy;
 
-namespace Raft.Election
+namespace Raft.Communication
 {
     public class NodeRunner: IMessageBrokerListener
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         
         private readonly Timer _timer;
-        public IMessageResponseStrategy MessageResponseStrategy { get; set; }
+
+        private readonly StrategySelector _strategySelector;
+        
         private Node Node { get; }
         public string Name => Node.Name;
 
@@ -19,9 +23,10 @@ namespace Raft.Election
             return $"{Name} {nodeStatus}- {Node.Value}";
         }
 
-        public NodeRunner(Node node, int electionTimeout)
+        public NodeRunner(Node node, int electionTimeout, StrategySelector strategySelector)
         {
             Node = node;
+            _strategySelector = strategySelector;
             _timer = new Timer(electionTimeout * 10);
         }
         
@@ -39,7 +44,7 @@ namespace Raft.Election
 
         private void RespondToMessage(NodeMessage message)
         {
-            MessageResponseStrategy.RespondToMessage(message);
+            _strategySelector.SelectStrategy(Node).RespondToMessage(message);
         }
 
         public void Start()
@@ -51,7 +56,7 @@ namespace Raft.Election
             {
                 Logger.Trace($"node {Node.Name} - timer elapsed");
                 Node.SendVoteRequest();
-                MessageResponseStrategy = new CandidateMessageResponseStrategy(Node);
+                Node.Status = NodeStatus.Candidate;
             };
         }
 

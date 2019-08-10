@@ -1,7 +1,8 @@
 using System;
+using Raft.Election;
 using Raft.Entities;
 
-namespace Raft.Election
+namespace Raft.NodeStrategy
 {
     public class FollowerMessageResponseStrategy: IMessageResponseStrategy
     {
