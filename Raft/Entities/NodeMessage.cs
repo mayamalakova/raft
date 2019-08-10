@@ -9,6 +9,8 @@ namespace Raft.Entities
 
         public string SenderName { get; private set; }
 
+        public int Term { get; set; }
+
         public Guid Id { get; private set; }
         
         public NodeMessage(string value, MessageType type, string senderName, Guid id)
@@ -27,5 +29,7 @@ namespace Raft.Entities
         LogUpdateConfirmation,
         LogCommit,
         Info,
+        VoteRequest,
+        LeaderVote
     }
 }

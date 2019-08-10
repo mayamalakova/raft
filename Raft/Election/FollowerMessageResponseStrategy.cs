@@ -32,9 +32,18 @@ namespace Raft.Election
                     break;
                 case MessageType.Info:
                     break;
+                
+                case MessageType.VoteRequest:
+                    var term = int.Parse(message.Value);
+                    if (!Node.HasVotedInTerm(term))
+                    {
+                        Node.Vote(message.SenderName, message.Id);
+                    }
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
+
     }
 }

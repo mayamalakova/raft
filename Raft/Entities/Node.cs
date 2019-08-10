@@ -78,5 +78,22 @@ namespace Raft.Entities
             Broker.Broadcast(logUpdate);
         }
 
+        public void SendVoteRequest()
+        {
+            _lastTerm++;
+            var message = new NodeMessage(_lastTerm.ToString(), MessageType.VoteRequest, Name, Guid.NewGuid());
+            Broker.Broadcast(message);
+        }
+
+        public void Vote(string leader, Guid electionId)
+        {
+            var voteMessage = new NodeMessage(leader, MessageType.LeaderVote, Name, electionId);
+            Broker.Broadcast(voteMessage);
+        }
+
+        public bool HasVotedInTerm(int term)
+        {
+            return _lastTerm >= term;
+        }
     }
 }
