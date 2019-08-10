@@ -12,16 +12,20 @@ namespace Raft.Test.Election
     {
         private const string TestValue = "test-message";
         
-        private LeaderNodeRunner _leaderNodeRunner;
+        private NodeRunner _leaderNodeRunner;
         private IMessageBroker _messageBroker;
         private Node _node;
+        private const string NodeName = "test";
 
         [SetUp]
         public void SetUp()
         {
             _messageBroker = Substitute.For<IMessageBroker>();
-            _node = new Node("test", _messageBroker);
-            _leaderNodeRunner = new LeaderNodeRunner(_node, 100);
+            _node = new Node(NodeName, _messageBroker) {Status = NodeStatus.Leader};
+            _leaderNodeRunner = new NodeRunner(_node, 100)
+            {
+                MessageResponseStrategy = new LeaderMessageResponseStrategy(_node, 3)
+            };
         }
         
         [Test]
@@ -47,7 +51,6 @@ namespace Raft.Test.Election
         [Test]
         public void CommitUpdate_WhenMajorityConfirmsLogUpdate()
         {
-            _leaderNodeRunner.NodesCount = 3;
             var updateId = Guid.NewGuid();
             _node.Log.Add(new LogEntry(OperationType.Update, TestValue, updateId));
             
@@ -64,5 +67,10 @@ namespace Raft.Test.Election
             _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.LogCommit));
         }
         
+        [Test]
+        public void DisplayStatus()
+        {
+            _leaderNodeRunner.ToString().ShouldBe($"{NodeName} (leader) - {_node.Value}");
+        }
     }
 }

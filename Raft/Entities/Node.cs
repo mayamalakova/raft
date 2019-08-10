@@ -9,6 +9,7 @@ namespace Raft.Entities
     public class Node
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private int _lastTerm = 0;
 
         private IMessageBroker Broker { get; }
 
@@ -17,6 +18,7 @@ namespace Raft.Entities
         public Collection<LogEntry> Log { get; } = new Collection<LogEntry>();
 
         public string Value { get; private set; }
+        public NodeStatus Status { get; set; }
 
         public Node(string name, string value)
         {

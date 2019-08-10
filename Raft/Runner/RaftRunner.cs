@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -67,7 +66,7 @@ namespace Raft.Runner
         {
             foreach (var nodeRunner in _nodeRunners)
             {
-                nodeRunner.DisplayStatus();
+                Console.WriteLine(nodeRunner);
             }
         }
 
@@ -148,18 +147,25 @@ namespace Raft.Runner
             nodeRunner.Start();
         }
 
-        public LeaderNodeRunner InitializeLeader(string name)
+        public NodeRunner InitializeLeader(string name)
         {
-            var node = new Node(name, Broker);
-            var nodeRunner = new LeaderNodeRunner(node, TimeoutGenerator.GenerateElectionTimeout());
+            var node = new Node(name, Broker) {Status = NodeStatus.Leader};
+            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout())
+            {
+                MessageResponseStrategy = new LeaderMessageResponseStrategy(node, 4)
+            };
+            
             Broker.Register(nodeRunner);
             return nodeRunner;
         }
 
         public NodeRunner InitializeFollower(string name)
         {
-            var node = new Node(name, Broker);
-            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout());
+            var node = new Node(name, Broker) {Status = NodeStatus.Follower};
+            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout())
+            {
+                MessageResponseStrategy = new FollowerMessageResponseStrategy(node)
+            };
             Broker.Register(nodeRunner);
             return nodeRunner;
         }

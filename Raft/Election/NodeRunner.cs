@@ -1,4 +1,3 @@
-using System;
 using System.Timers;
 using NLog;
 using Raft.Entities;
@@ -10,17 +9,19 @@ namespace Raft.Election
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
         
         private readonly Timer _timer;
-        private readonly IMessageResponseStrategy _messageResponseStrategy;
-        protected Node Node { get; }
-        protected NodeStatus Status { get; set; }
+        public IMessageResponseStrategy MessageResponseStrategy { get; set; }
+        private Node Node { get; }
         public string Name => Node.Name;
+
+        public override string ToString()
+        {
+            var nodeStatus = Node.Status == NodeStatus.Leader ? "(leader) " : "";
+            return $"{Name} {nodeStatus}- {Node.Value}";
+        }
 
         public NodeRunner(Node node, int electionTimeout)
         {
             Node = node;
-            Status = NodeStatus.Follower;
-
-            _messageResponseStrategy = new FollowerMessageResponseStrategy(node);
             _timer = new Timer(electionTimeout * 10);
         }
         
@@ -36,14 +37,9 @@ namespace Raft.Election
             RespondToMessage(message);
         }
 
-        public virtual void DisplayStatus()
+        private void RespondToMessage(NodeMessage message)
         {
-            Console.WriteLine($"{Name} - {Node.Value}");
-        }
-
-        protected virtual void RespondToMessage(NodeMessage message)
-        {
-            _messageResponseStrategy.RespondToMessage(message);
+            MessageResponseStrategy.RespondToMessage(message);
         }
 
         public void Start()
@@ -54,6 +50,8 @@ namespace Raft.Election
             _timer.Elapsed += (sender, args) =>
             {
                 Logger.Trace($"node {Node.Name} - timer elapsed");
+                Node.SendVoteRequest();
+                MessageResponseStrategy = new CandidateMessageResponseStrategy(Node);
             };
         }
 

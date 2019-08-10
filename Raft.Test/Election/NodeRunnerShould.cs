@@ -11,7 +11,8 @@ namespace Raft.Test.Election
     public class NodeRunnerShould
     {
         private const string TestValue = "test-message";
-        
+        private const string TestName = "test";
+
         private NodeRunner _nodeRunner;
         private IMessageBroker _messageBroker;
         private Node _node;
@@ -20,8 +21,11 @@ namespace Raft.Test.Election
         public void SetUp()
         {
             _messageBroker = Substitute.For<IMessageBroker>();
-            _node = new Node("test", _messageBroker);
-            _nodeRunner = new NodeRunner(_node, 100);
+            _node = new Node(TestName, _messageBroker) {Status = NodeStatus.Follower};
+            _nodeRunner = new NodeRunner(_node, 100)
+            {
+                MessageResponseStrategy = new FollowerMessageResponseStrategy(_node)
+            };
         }
         
         [Test]
@@ -47,6 +51,12 @@ namespace Raft.Test.Election
             
             _node.Log.Last().Type.ShouldBe(OperationType.Commit);
             _node.Value.ShouldBe(TestValue);
+        }
+
+        [Test]
+        public void DisplayStatus()
+        {
+            _nodeRunner.ToString().ShouldBe($"{TestName} - ");
         }
     }
 }
