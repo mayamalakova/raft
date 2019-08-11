@@ -7,7 +7,7 @@ using Raft.Entities;
 using Raft.NodeStrategy;
 using Shouldly;
 
-namespace Raft.Test.Election
+namespace Raft.Test.Communication
 {
     public class FollowerNodeRunnerShould
     {
