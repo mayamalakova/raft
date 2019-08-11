@@ -85,10 +85,9 @@ namespace Raft.Runner
 
         private void UpdateValue(string command)
         {
-            var term = _nodeRunners.First(n => n.IsLeading).Term;
             var entries = command.Split(' ');
             var value = entries[1];
-            Broker.Broadcast(value, term);
+            Broker.Broadcast(value);
         }
 
         private static void ShowHelp()

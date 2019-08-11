@@ -13,9 +13,9 @@ namespace Raft.Communication
         
         public IEnumerable<IMessageBrokerListener> Listeners => _listeners;
 
-        public void Broadcast(string newValue, int term)
+        public void Broadcast(string newValue)
         {
-            var nodeMessage = new NodeMessage(term, newValue, MessageType.ValueUpdate, null, Guid.Empty);
+            var nodeMessage = new NodeMessage(-1, newValue, MessageType.ValueUpdate, null, Guid.Empty);
             NotifyListeners(nodeMessage);
         }
 
