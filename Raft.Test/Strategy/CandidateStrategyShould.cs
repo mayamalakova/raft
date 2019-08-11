@@ -10,6 +10,8 @@ namespace Raft.Test.Strategy
     [TestFixture]
     public class CandidateStrategyShould
     {
+        private const int CandidateTerm = 1;
+        private const string CandidateName = "test";
         private IMessageBroker _messageBroker;
         private Node _node;
         private CandidateStrategy _candidateStrategy;
@@ -18,19 +20,55 @@ namespace Raft.Test.Strategy
         public void SetUp()
         {
             _messageBroker = Substitute.For<IMessageBroker>();
-            _node = new Node("test", _messageBroker) {Status = new CandidateStatus(1)};
-            _candidateStrategy = new CandidateStrategy(_node, 3,1 );
+            _node = new Node(CandidateName, _messageBroker) {Status = new CandidateStatus(CandidateTerm)};
+            _candidateStrategy = new CandidateStrategy(_node, 3,CandidateTerm );
         }
         
         [Test]
         public void AddVotes_OnVoteReceived()
         {
-            var vote = new NodeMessage(1, "test", MessageType.LeaderVote, "test", Guid.Empty);
+            var vote = new NodeMessage(CandidateTerm, CandidateName, MessageType.LeaderVote, "A", Guid.Empty);
             _candidateStrategy.RespondToMessage(vote);
 
             var candidateStatus = _node.Status as CandidateStatus;
             candidateStatus.ShouldNotBeNull();
-            candidateStatus.ConfirmedNodes.Count.ShouldBe(1);
+            candidateStatus.ConfirmedNodes.Count.ShouldBe(CandidateTerm);
+        }
+        
+        [Test]
+        public void BecomeLeader_OnMajorityOfVotesReceived()
+        {
+            var voteA = new NodeMessage(CandidateTerm, CandidateName, MessageType.LeaderVote, "A", Guid.Empty);
+            _candidateStrategy.RespondToMessage(voteA);
+            var voteB = new NodeMessage(CandidateTerm, CandidateName, MessageType.LeaderVote, "B", Guid.Empty);
+            _candidateStrategy.RespondToMessage(voteB);
+
+            _node.Status.Name.ShouldBe(NodeStatus.Leader);
+        }
+
+        [TestCase(MessageType.LogUpdate)]
+        [TestCase(MessageType.LogCommit)]
+        [TestCase(MessageType.ValueUpdate)]
+        [TestCase(MessageType.LogUpdateConfirmation)]
+        [TestCase(MessageType.Info)]
+        public void BecomeFollower_OnAnotherLeaderFound(MessageType messageType)
+        {
+            var valueUpdate = new NodeMessage(0, CandidateName, messageType, "L", Guid.Empty);
+            _candidateStrategy.RespondToMessage(valueUpdate);
+            
+            _node.Status.Name.ShouldBe(NodeStatus.Follower);
+        }
+
+        [Test]
+        public void BecomeFollower_OnNewerTermStarted()
+        {
+            var voteRequest = new NodeMessage(CandidateTerm + 1, CandidateName, MessageType.VoteRequest, "C", Guid.Empty);
+            _candidateStrategy.RespondToMessage(voteRequest);
+            
+            _node.Status.Name.ShouldBe(NodeStatus.Follower);
+            
+            _messageBroker.Received(1)
+                .Broadcast(message: Arg.Is<NodeMessage>(m => m.Type == MessageType.LeaderVote && m.SenderName == CandidateName));
         }
     }
 }
