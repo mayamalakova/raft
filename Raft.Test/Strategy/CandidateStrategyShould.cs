@@ -21,7 +21,7 @@ namespace Raft.Test.Strategy
         {
             _messageBroker = Substitute.For<IMessageBroker>();
             _node = new Node(CandidateName, _messageBroker) {Status = new CandidateStatus(CandidateTerm)};
-            _candidateStrategy = new CandidateStrategy(_node, 3,CandidateTerm );
+            _candidateStrategy = new CandidateStrategy(_node, 3 );
         }
         
         [Test]

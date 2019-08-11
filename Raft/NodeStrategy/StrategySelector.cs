@@ -25,7 +25,7 @@ namespace Raft.NodeStrategy
                     case NodeStatus.Leader:
                         return new LeaderStrategy(node, _count);
                     case NodeStatus.Candidate:
-                        return new CandidateStrategy(node, _count, node.Status.Term + 1);
+                        return new CandidateStrategy(node, _count);
                     default: throw new ArgumentException("Unknown status");
             }
         }

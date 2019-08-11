@@ -12,14 +12,12 @@ namespace Raft.NodeStrategy
     {
         private readonly Node _node;
         private readonly int _nodesCount;
-        private int _term;
         private readonly HashSet<string> _votes;
 
-        public CandidateStrategy(Node node, int nodesCount, int term)
+        public CandidateStrategy(Node node, int nodesCount)
         {
             _node = node;
             _nodesCount = nodesCount;
-            _term = term;
             var candidateStatus = _node.Status as CandidateStatus;
             _votes = candidateStatus?.ConfirmedNodes;
         }
