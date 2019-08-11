@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using Raft.Communication;
-using Raft.Election;
 
 namespace Raft.Entities
 {
+    /// <summary>
+    /// Broadcasts messages to subscribed listeners
+    /// </summary>
     public interface IMessageBroker
     {
         void Broadcast(NodeMessage message);

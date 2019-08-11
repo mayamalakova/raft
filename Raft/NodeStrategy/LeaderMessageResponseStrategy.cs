@@ -1,9 +1,12 @@
 using System;
-using Raft.Election;
+using Raft.Communication;
 using Raft.Entities;
 
 namespace Raft.NodeStrategy
 {
+    /// <summary>
+    /// Leader node strategy for responding to Raft messages
+    /// </summary>
     public class LeaderMessageResponseStrategy: IMessageResponseStrategy
     {
         private readonly LeaderStatus _status;

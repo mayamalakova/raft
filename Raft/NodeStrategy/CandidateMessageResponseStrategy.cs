@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Raft.Election;
+using Raft.Communication;
 using Raft.Entities;
 
 namespace Raft.NodeStrategy
 {
+    /// <summary>
+    /// Candidate node strategy for responding to Raft messages
+    /// </summary>
     public class CandidateMessageResponseStrategy : IMessageResponseStrategy
     {
         private readonly Node _node;

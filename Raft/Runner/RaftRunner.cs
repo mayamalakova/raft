@@ -5,7 +5,6 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using Raft.Communication;
-using Raft.Election;
 using Raft.Entities;
 using Raft.NodeStrategy;
 using Raft.Time;

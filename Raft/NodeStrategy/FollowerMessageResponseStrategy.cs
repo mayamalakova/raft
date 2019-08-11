@@ -1,9 +1,12 @@
 using System;
-using Raft.Election;
+using Raft.Communication;
 using Raft.Entities;
 
 namespace Raft.NodeStrategy
 {
+    /// <summary>
+    /// Follower node strategy for responding to Raft messages
+    /// </summary>
     public class FollowerMessageResponseStrategy: IMessageResponseStrategy
     {
         private Node Node { get; }

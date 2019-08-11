@@ -1,13 +1,12 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using Raft.Election;
+using Raft.Communication;
 using Raft.Entities;
 
 namespace Raft.NodeStrategy
 {
+    /// <summary>
+    /// Selects the strategy for responding to Raft messages that a node is using
+    /// </summary>
     public class StrategySelector
     {
         private readonly int _count;

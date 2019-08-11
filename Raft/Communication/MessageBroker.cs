@@ -5,6 +5,7 @@ using Raft.Entities;
 
 namespace Raft.Communication
 {
+
     public class MessageBroker : IMessageBroker
     {
         private readonly ICollection<IMessageBrokerListener> _listeners = new List<IMessageBrokerListener>();

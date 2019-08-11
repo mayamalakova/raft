@@ -5,6 +5,9 @@ using Raft.NodeStrategy;
 
 namespace Raft.Communication
 {
+    /// <summary>
+    /// Triggers message processing and tracks timeouts
+    /// </summary>
     public class NodeRunner: IMessageBrokerListener
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
