@@ -50,7 +50,7 @@ namespace Raft.Entities
             Value = logEntry.Value;
         }
 
-        protected internal LogEntry LastLogEntry()
+        public LogEntry LastLogEntry()
         {
             return Log.Count > 0 ? Log.Last() : null;
         }

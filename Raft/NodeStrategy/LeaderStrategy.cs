@@ -31,7 +31,7 @@ namespace Raft.NodeStrategy
                     break;
 
                 case MessageType.LogUpdateConfirmation:
-                    if (ComfirmsLastEntry(message))
+                    if (ConfirmsLastEntry(message))
                     {
                         AddConfirmation(message);
                         if (HasMajority())
@@ -80,7 +80,7 @@ namespace Raft.NodeStrategy
             _status.ConfirmedNodes.Add(message.SenderName);
         }
 
-        private bool ComfirmsLastEntry(NodeMessage message)
+        private bool ConfirmsLastEntry(NodeMessage message)
         {
             return message.Id == Node.LastLogEntry().Id;
         }
