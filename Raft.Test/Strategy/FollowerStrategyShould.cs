@@ -51,5 +51,18 @@ namespace Raft.Test.Strategy
             _node.LastLogEntry().Value.ShouldBe("test");
             _node.LastLogEntry().Type.ShouldBe(OperationType.Commit);
         }
+
+        [Test]
+        public void IgnoreLogCommits_ForIrrelevantEntries()
+        {
+            var entryId = Guid.NewGuid();
+            _node.Log.Add(new LogEntry(OperationType.Update, "current entry", entryId));
+            
+            var logUpdate = new NodeMessage(0, "irrelevant entry", MessageType.LogCommit, "L", Guid.NewGuid());
+            _followerStrategy.RespondToMessage(logUpdate);
+            
+            _node.LastLogEntry().Value.ShouldBe("current entry");
+            _node.LastLogEntry().Type.ShouldBe(OperationType.Update);
+        }
     }
 }
