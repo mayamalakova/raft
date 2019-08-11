@@ -4,5 +4,7 @@ namespace Raft.Entities
     {
         string Name { get; }
 
+        int Term { get; set; }
+
     }
 }

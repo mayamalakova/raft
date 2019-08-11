@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Raft.Election;
 using Raft.Entities;
 
 namespace Raft.Communication
@@ -13,9 +12,9 @@ namespace Raft.Communication
         
         public IEnumerable<IMessageBrokerListener> Listeners => _listeners;
 
-        public void Broadcast(string newValue)
+        public void Broadcast(string newValue, int term)
         {
-            var nodeMessage = new NodeMessage(newValue, MessageType.ValueUpdate, null, Guid.Empty);
+            var nodeMessage = new NodeMessage(term, newValue, MessageType.ValueUpdate, null, Guid.Empty);
             NotifyListeners(nodeMessage);
         }
 

@@ -13,12 +13,13 @@ namespace Raft.Entities
 
         public Guid Id { get; private set; }
         
-        public NodeMessage(string value, MessageType type, string senderName, Guid id)
+        public NodeMessage(int term, string value, MessageType type, string senderName, Guid id)
         {
             Value = value;
             Type = type;
             SenderName = senderName;
             Id = id;
+            Term = term;
         }
     }
 

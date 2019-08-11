@@ -1,6 +1,5 @@
 using System.Timers;
 using NLog;
-using Raft.Election;
 using Raft.Entities;
 using Raft.NodeStrategy;
 
@@ -16,10 +15,12 @@ namespace Raft.Communication
         
         private Node Node { get; }
         public string Name => Node.Name;
+        public bool IsLeading => Node.Status.Name == NodeStatus.Leader;
+        public int Term => Node.Status.Term;
 
         public override string ToString()
         {
-            return $"{Name} {Node.Status} - {Node.Value}".Replace("  ", " ");
+            return $"{Name} ({Node.Status.Term}) {Node.Status} - {Node.Value}".Replace("  ", " ");
         }
 
         public NodeRunner(Node node, int electionTimeout, StrategySelector strategySelector)
@@ -54,9 +55,15 @@ namespace Raft.Communication
             _timer.Elapsed += (sender, args) =>
             {
                 Logger.Trace($"node {Node.Name} - timer elapsed");
-                Node.SendVoteRequest();
-                Node.Status = new CandidateStatus();
+                BecomeCandidate();
             };
+        }
+
+        private void BecomeCandidate()
+        {
+            var newTerm = Node.Status.Term + 1;
+            Node.Status = new CandidateStatus(newTerm);
+            Node.SendVoteRequest(newTerm);
         }
 
         private void RestartElectionTimeout()

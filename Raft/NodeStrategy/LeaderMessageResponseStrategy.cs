@@ -24,22 +24,17 @@ namespace Raft.NodeStrategy
             switch (message.Type)
             {
                 case MessageType.ValueUpdate:
-                    var entryId = Guid.NewGuid();
-                    Node.UpdateLog(message, entryId);
-                    Node.SendLogUpdateRequest(message, entryId);
+                    RequestLogUpdate(message);
                     break;
 
                 case MessageType.LogUpdateConfirmation:
-                    if (message.Id != Node.LastLogEntry().Id)
+                    if (ComfirmsLastEntry(message))
                     {
-                        return;
-                    }
-
-                    _status.ConfirmedNodes.Add(message.SenderName);
-                    if (_status.ConfirmedNodes.Count > _nodesCount / 2)
-                    {
-                        Node.CommitLog(message);
-                        Node.SendCommit(message);
+                        AddConfirmation(message);
+                        if (HasMajority())
+                        {
+                            CommitLogEntry(message);
+                        }
                     }
 
                     break;
@@ -50,9 +45,41 @@ namespace Raft.NodeStrategy
                     break;
                 case MessageType.Info:
                     break;
+                case MessageType.VoteRequest:
+                    break;
+                case MessageType.LeaderVote:
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void RequestLogUpdate(NodeMessage message)
+        {
+            var entryId = Guid.NewGuid();
+            Node.UpdateLog(message, entryId);
+            Node.SendLogUpdateRequest(message, entryId);
+        }
+
+        private void CommitLogEntry(NodeMessage message)
+        {
+            Node.CommitLog(message);
+            Node.SendCommit(message);
+        }
+
+        private bool HasMajority()
+        {
+            return _status.ConfirmedNodes.Count > _nodesCount / 2;
+        }
+
+        private void AddConfirmation(NodeMessage message)
+        {
+            _status.ConfirmedNodes.Add(message.SenderName);
+        }
+
+        private bool ComfirmsLastEntry(NodeMessage message)
+        {
+            return message.Id == Node.LastLogEntry().Id;
         }
     }
 }

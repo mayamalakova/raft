@@ -22,14 +22,14 @@ namespace Raft.Test.Election
         public void SetUp()
         {
             _messageBroker = Substitute.For<IMessageBroker>();
-            _node = new Node(NodeName, _messageBroker) {Status = new LeaderStatus()};
+            _node = new Node(NodeName, _messageBroker) {Status = new LeaderStatus(0)};
             _leaderNodeRunner = new NodeRunner(_node, 100, new StrategySelector(3));
         }
         
         [Test]
         public void UpdateLog_OnValueUpdateReceived()
         {
-            var message = new NodeMessage(TestValue, MessageType.ValueUpdate, null, Guid.Empty);
+            var message = new NodeMessage(0, TestValue, MessageType.ValueUpdate, null, Guid.Empty);
             _leaderNodeRunner.ReceiveMessage(message);
             
             _node.Log.Count.ShouldBe(1);
@@ -40,7 +40,7 @@ namespace Raft.Test.Election
         [Test]
         public void SendLogUpdate_OnValueUpdateReceived()
         {
-            var message = new NodeMessage(TestValue, MessageType.ValueUpdate, null, Guid.Empty);
+            var message = new NodeMessage(0, TestValue, MessageType.ValueUpdate, null, Guid.Empty);
             _leaderNodeRunner.ReceiveMessage(message);
             
             _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.LogUpdate));
@@ -52,8 +52,8 @@ namespace Raft.Test.Election
             var updateId = Guid.NewGuid();
             _node.Log.Add(new LogEntry(OperationType.Update, TestValue, updateId));
             
-            var messageA = new NodeMessage(TestValue, MessageType.LogUpdateConfirmation, "A", updateId);
-            var messageB = new NodeMessage(TestValue, MessageType.LogUpdateConfirmation, "B", updateId);
+            var messageA = new NodeMessage(0, TestValue, MessageType.LogUpdateConfirmation, "A", updateId);
+            var messageB = new NodeMessage(0, TestValue, MessageType.LogUpdateConfirmation, "B", updateId);
             
             _leaderNodeRunner.ReceiveMessage(messageA);
             _node.Log.Last().Type.ShouldBe(OperationType.Update);
@@ -68,7 +68,7 @@ namespace Raft.Test.Election
         [Test]
         public void DisplayStatus()
         {
-            _leaderNodeRunner.ToString().ShouldBe($"{NodeName} (leader) - {_node.Value}");
+            _leaderNodeRunner.ToString().ShouldBe($"{NodeName} (0) L - {_node.Value}");
         }
     }
 }

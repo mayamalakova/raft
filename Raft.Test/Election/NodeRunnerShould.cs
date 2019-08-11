@@ -3,7 +3,6 @@ using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
 using Raft.Communication;
-using Raft.Election;
 using Raft.Entities;
 using Raft.NodeStrategy;
 using Shouldly;
@@ -23,14 +22,14 @@ namespace Raft.Test.Election
         public void SetUp()
         {
             _messageBroker = Substitute.For<IMessageBroker>();
-            _node = new Node(TestName, _messageBroker) {Status = new FollowerStatus()};
+            _node = new Node(TestName, _messageBroker) {Status = new FollowerStatus(0)};
             _nodeRunner = new NodeRunner(_node, 100, new StrategySelector(3));
         }
         
         [Test]
         public void UpdateLogAndConfirm_OnLogUpdate()
         {
-            var message = new NodeMessage(TestValue, MessageType.LogUpdate, null, Guid.Empty);
+            var message = new NodeMessage(0, TestValue, MessageType.LogUpdate, null, Guid.Empty);
             _nodeRunner.ReceiveMessage(message);
             
             _node.Log.Count.ShouldBe(1);
@@ -45,7 +44,7 @@ namespace Raft.Test.Election
             var updateId = Guid.NewGuid();
             _node.Log.Add(new LogEntry(OperationType.Update, TestValue, updateId));
             
-            var message = new NodeMessage(TestValue, MessageType.LogCommit, null, updateId);
+            var message = new NodeMessage(0, TestValue, MessageType.LogCommit, null, updateId);
             _nodeRunner.ReceiveMessage(message);
             
             _node.Log.Last().Type.ShouldBe(OperationType.Commit);
@@ -55,7 +54,7 @@ namespace Raft.Test.Election
         [Test]
         public void DisplayStatus()
         {
-            _nodeRunner.ToString().ShouldBe($"{TestName} - ");
+            _nodeRunner.ToString().ShouldBe($"{TestName} (0) F - ");
         }
     }
 }

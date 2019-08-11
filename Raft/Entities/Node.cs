@@ -2,14 +2,12 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using NLog;
-using Raft.Election;
 
 namespace Raft.Entities
 {
     public class Node
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private int _lastTerm = 0;
 
         private IMessageBroker Broker { get; }
 
@@ -18,6 +16,7 @@ namespace Raft.Entities
         public Collection<LogEntry> Log { get; } = new Collection<LogEntry>();
 
         public string Value { get; private set; }
+        
         public INodeStatus Status { get; set; }
 
         public Node(string name, string value)
@@ -60,13 +59,13 @@ namespace Raft.Entities
         {
             Logger.Debug($"node {Name} confirms {entryId}");
             
-            var nodeMessage = new NodeMessage(null, MessageType.LogUpdateConfirmation, Name, entryId);
+            var nodeMessage = new NodeMessage(Status.Term, null, MessageType.LogUpdateConfirmation, Name, entryId);
             Broker.Broadcast(nodeMessage);
         }
 
         internal void SendCommit(NodeMessage message)
         {
-            var nodeMessage = new NodeMessage(message.Value, MessageType.LogCommit, Name, message.Id);
+            var nodeMessage = new NodeMessage(Status.Term, message.Value, MessageType.LogCommit, Name, message.Id);
             Broker.Broadcast(nodeMessage);
         }
 
@@ -74,26 +73,25 @@ namespace Raft.Entities
         {
             Logger.Debug($"{Name} initiating update {entryId}");
             
-            var logUpdate = new NodeMessage(message.Value, MessageType.LogUpdate, Name, entryId);
+            var logUpdate = new NodeMessage(Status.Term, message.Value, MessageType.LogUpdate, Name, entryId);
             Broker.Broadcast(logUpdate);
         }
 
-        public void SendVoteRequest()
+        public void SendVoteRequest(int term)
         {
-            _lastTerm++;
-            var message = new NodeMessage(_lastTerm.ToString(), MessageType.VoteRequest, Name, Guid.NewGuid());
+            var message = new NodeMessage(term, Name, MessageType.VoteRequest, Name, Guid.NewGuid());
             Broker.Broadcast(message);
         }
 
-        public void Vote(string leader, Guid electionId)
+        public void Vote(int term, string leader, Guid electionId)
         {
-            var voteMessage = new NodeMessage(leader, MessageType.LeaderVote, Name, electionId);
+            var voteMessage = new NodeMessage(term, leader, MessageType.LeaderVote, Name, electionId);
             Broker.Broadcast(voteMessage);
         }
 
         public bool HasVotedInTerm(int term)
         {
-            return _lastTerm >= term;
+            return Status.Term >= term;
         }
     }
 }

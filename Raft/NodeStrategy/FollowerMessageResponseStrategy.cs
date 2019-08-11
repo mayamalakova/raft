@@ -18,15 +18,14 @@ namespace Raft.NodeStrategy
             switch (message.Type)
             {
                 case MessageType.LogUpdate:
-                    Node.UpdateLog(message, message.Id);
-                    Node.ConfirmLogUpdate(message.Id);
+                    ConfirmLogUpdate(message);
                     break;
 
                 case MessageType.LogUpdateConfirmation:
                     break;
 
                 case MessageType.LogCommit:
-                    Node.CommitLog(message);
+                    CommitLog(message);
                     break;
 
                 case MessageType.ValueUpdate:
@@ -35,16 +34,32 @@ namespace Raft.NodeStrategy
                     break;
                 
                 case MessageType.VoteRequest:
-                    var term = int.Parse(message.Value);
-                    if (!Node.HasVotedInTerm(term))
+                    if (!Node.HasVotedInTerm(message.Term))
                     {
-                        Node.Vote(message.SenderName, message.Id);
+                        Vote(message);
                     }
+                    break;
+                case MessageType.LeaderVote:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
+        private void Vote(NodeMessage message)
+        {
+            Node.Vote(message.Term, message.SenderName, message.Id);
+        }
+
+        private void CommitLog(NodeMessage message)
+        {
+            Node.CommitLog(message);
+        }
+
+        private void ConfirmLogUpdate(NodeMessage message)
+        {
+            Node.UpdateLog(message, message.Id);
+            Node.ConfirmLogUpdate(message.Id);
+        }
     }
 }
