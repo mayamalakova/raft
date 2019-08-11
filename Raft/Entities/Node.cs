@@ -79,6 +79,8 @@ namespace Raft.Entities
 
         public void Vote(int term, string leader, Guid electionId)
         {
+            Logger.Debug($"{Name} votes for {leader}");
+            
             var voteMessage = new NodeMessage(term, leader, MessageType.LeaderVote, Name, electionId);
             Broker.Broadcast(voteMessage);
         }
@@ -86,6 +88,14 @@ namespace Raft.Entities
         public bool HasVotedInTerm(int term)
         {
             return Status.Term >= term;
+        }
+
+        public void SendPing()
+        {
+            Logger.Debug($"{Name} sends ping");
+            
+            var voteMessage = new NodeMessage(Status.Term, Name, MessageType.Info, Name, Guid.Empty);
+                        Broker.Broadcast(voteMessage);
         }
     }
 }

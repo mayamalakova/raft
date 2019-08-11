@@ -7,7 +7,7 @@ namespace Raft.Time
         public int GenerateElectionTimeout()
         {
             var random = new Random();
-            return random.Next(150, 300);
+            return random.Next(150, 300) * 5;
         }
     }
 }

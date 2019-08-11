@@ -27,6 +27,7 @@ namespace Raft.NodeStrategy
             {
                 case MessageType.LogUpdate:
                     BecomeFollower(message);
+                    ConfirmLogUpdate(message);
                     break;
 
                 case MessageType.LogUpdateConfirmation:

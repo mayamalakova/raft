@@ -61,7 +61,7 @@ namespace Raft.NodeStrategy
 
         private void BecomeFollowerIfSentFromNewerLeader(NodeMessage message)
         {
-            if (message.Term > Node.Status.Term)
+            if (message.Term >= Node.Status.Term)
             {
                 BecomeFollower(message);
             }

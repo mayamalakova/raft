@@ -32,6 +32,7 @@ namespace Raft.NodeStrategy
 
                 case MessageType.ValueUpdate:
                     break;
+                
                 case MessageType.Info:
                     break;
                 
@@ -56,12 +57,6 @@ namespace Raft.NodeStrategy
         private void CommitLog(NodeMessage message)
         {
             Node.CommitLog(message);
-        }
-
-        private void ConfirmLogUpdate(NodeMessage message)
-        {
-            Node.UpdateLog(message, message.Id);
-            Node.ConfirmLogUpdate(message.Id);
         }
     }
 }
