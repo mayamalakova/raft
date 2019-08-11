@@ -9,7 +9,7 @@ using Shouldly;
 
 namespace Raft.Test.Election
 {
-    public class NodeRunnerShould
+    public class FollowerNodeRunnerShould
     {
         private const string TestValue = "test-message";
         private const string TestName = "test";

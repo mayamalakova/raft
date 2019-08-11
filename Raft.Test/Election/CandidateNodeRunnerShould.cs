@@ -8,7 +8,7 @@ using Shouldly;
 namespace Raft.Test.Election
 {
     [TestFixture]
-    public class CandidateNodeShould
+    public class CandidateNodeRunnerShould
     {
         private NodeRunner _candidate;
 
