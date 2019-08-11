@@ -6,8 +6,8 @@ namespace Raft.Entities
         
     {
         public OperationType Type { get; set; }
-        public string Value { get; set; }
-        public Guid Id { get; set; }
+        public string Value { get; }
+        public Guid Id { get; }
 
         public LogEntry(OperationType type, string value, Guid id)
         {

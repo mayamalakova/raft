@@ -1,5 +1,11 @@
-namespace Raft.Election
+using System.Collections.Generic;
+using Raft.Communication;
+
+namespace Raft.Entities
 {
+    /// <summary>
+    /// Broadcasts messages to subscribed listeners
+    /// </summary>
     public interface IMessageBroker
     {
         void Broadcast(NodeMessage message);
@@ -9,5 +15,7 @@ namespace Raft.Election
         
         void Disconnect(string node);
         void Connect(string node);
+
+        IEnumerable<IMessageBrokerListener> Listeners { get; }
     }
 }

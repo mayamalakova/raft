@@ -1,11 +1,12 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+using System.Linq;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
 using Raft.Communication;
-using Raft.Election;
+using Raft.Entities;
+using Raft.NodeStrategy;
 using Raft.Time;
 
 namespace Raft.Runner
@@ -13,8 +14,8 @@ namespace Raft.Runner
     public class RaftRunner
     {
         private static readonly TimeoutGenerator TimeoutGenerator = new TimeoutGenerator();
-        private readonly IMessageBroker _messageBroker = new MessageBroker();
         private readonly Collection<IMessageBrokerListener> _nodeRunners = new Collection<IMessageBrokerListener>();
+        public IMessageBroker Broker { get; } = new MessageBroker();
 
         public void Run()
         {
@@ -66,27 +67,27 @@ namespace Raft.Runner
         {
             foreach (var nodeRunner in _nodeRunners)
             {
-                nodeRunner.DisplayStatus();
+                Console.WriteLine(nodeRunner);
             }
         }
 
         private void ConnectNode(string command)
         {
             var entries = command.Split(' ');
-            _messageBroker.Connect(entries[1]);
+            Broker.Connect(entries[1]);
         }
 
         private void DisconnectNode(string command)
         {
             var entries = command.Split(' ');
-            _messageBroker.Disconnect(entries[1]);
+            Broker.Disconnect(entries[1]);
         }
 
         private void UpdateValue(string command)
         {
             var entries = command.Split(' ');
             var value = entries[1];
-            _messageBroker.Broadcast(value);
+            Broker.Broadcast(value);
         }
 
         private static void ShowHelp()
@@ -135,26 +136,33 @@ namespace Raft.Runner
 
         private void StartLeaderNode(string name)
         {
-            var nodeRunner = new LeaderNodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
+            var nodeRunner = InitializeLeader(name);
             _nodeRunners.Add(nodeRunner);
-            var task = new Task(() =>
-            {
-//                nodeRunner.Subscribe(new NodeViewer());
-                nodeRunner.Start();
-            });
-            task.Start();
+            nodeRunner.Start();
         }
 
         private void StartNode(string name)
         {
-            var nodeRunner = new NodeRunner(name, TimeoutGenerator.GenerateElectionTimeout(), _messageBroker);
+            var nodeRunner = InitializeFollower(name);
             _nodeRunners.Add(nodeRunner);
-            var task = new Task(() =>
-            {
-//                nodeRunner.Subscribe(new NodeViewer());
-                nodeRunner.Start();
-            });
-            task.Start();
+            nodeRunner.Start();
+        }
+
+        public NodeRunner InitializeLeader(string name)
+        {
+            var node = new Node(name, Broker) {Status = new LeaderStatus(0)};
+            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(4));
+            
+            Broker.Register(nodeRunner);
+            return nodeRunner;
+        }
+
+        public NodeRunner InitializeFollower(string name)
+        {
+            var node = new Node(name, Broker) {Status = new FollowerStatus(0)};
+            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(4));
+            Broker.Register(nodeRunner);
+            return nodeRunner;
         }
     }
 }
