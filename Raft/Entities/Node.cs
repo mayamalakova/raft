@@ -19,12 +19,6 @@ namespace Raft.Entities
         
         public INodeStatus Status { get; set; }
 
-        public Node(string name, string value)
-        {
-            Value = value;
-            Name = name;
-        }
-
         public Node(string name, IMessageBroker messageBroker)
         {
             Name = name;
