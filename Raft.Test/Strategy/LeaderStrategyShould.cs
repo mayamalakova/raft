@@ -64,5 +64,17 @@ namespace Raft.Test.Strategy
             _messageBroker.Received(1).Broadcast(
                 Arg.Is<NodeMessage>(m => m.Type == MessageType.LogCommit && m.SenderName == "L"));
         }
+
+        [Test]
+        public void ResetConfirmations_OnNewValueUpdate()
+        {
+            var leaderStatus = _node.Status as LeaderStatus;
+            leaderStatus?.ConfirmedNodes.Add("A");
+            
+            var valueUpdate = new NodeMessage(0, "new value", MessageType.ValueUpdate, null, Guid.Empty);
+            _leaderStrategy.RespondToMessage(valueUpdate);
+            
+            leaderStatus?.ConfirmedNodes.ShouldBeEmpty();
+        }
     }
 }

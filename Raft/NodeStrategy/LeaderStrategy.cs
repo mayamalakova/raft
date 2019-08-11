@@ -27,6 +27,7 @@ namespace Raft.NodeStrategy
             switch (message.Type)
             {
                 case MessageType.ValueUpdate:
+                    ResetUpdateConfirmations();
                     RequestLogUpdate(message);
                     break;
 
@@ -55,6 +56,11 @@ namespace Raft.NodeStrategy
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private void ResetUpdateConfirmations()
+        {
+            _status.ConfirmedNodes.Clear();
         }
 
         private void RequestLogUpdate(NodeMessage message)
