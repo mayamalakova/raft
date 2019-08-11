@@ -76,5 +76,16 @@ namespace Raft.Test.Strategy
             
             leaderStatus?.ConfirmedNodes.ShouldBeEmpty();
         }
+
+        [TestCase(MessageType.LogUpdate)]
+        [TestCase(MessageType.LogCommit)]
+        [TestCase(MessageType.Info)]
+        public void BecomeFollower_OnNewerLeaderFound(MessageType messageType)
+        {
+            var fromLeader = new NodeMessage(1, "L1", messageType, "L1", Guid.Empty);
+            _leaderStrategy.RespondToMessage(fromLeader);
+            
+            _node.Status.Name.ShouldBe(NodeStatus.Follower);
+        }
     }
 }

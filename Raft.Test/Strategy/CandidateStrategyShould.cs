@@ -48,7 +48,6 @@ namespace Raft.Test.Strategy
 
         [TestCase(MessageType.LogUpdate)]
         [TestCase(MessageType.LogCommit)]
-        [TestCase(MessageType.LogUpdateConfirmation)]
         [TestCase(MessageType.Info)]
         public void BecomeFollower_OnAnotherLeaderFound(MessageType messageType)
         {

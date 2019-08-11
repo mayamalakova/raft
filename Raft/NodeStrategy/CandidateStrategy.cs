@@ -8,17 +8,16 @@ namespace Raft.NodeStrategy
     /// <summary>
     /// Candidate node strategy for responding to Raft messages
     /// </summary>
-    public class CandidateStrategy : IMessageResponseStrategy
+    public class CandidateStrategy : BaseStrategy, IMessageResponseStrategy
     {
-        private readonly Node _node;
         private readonly int _nodesCount;
         private readonly HashSet<string> _votes;
 
         public CandidateStrategy(Node node, int nodesCount)
         {
-            _node = node;
+            Node = node;
             _nodesCount = nodesCount;
-            var candidateStatus = _node.Status as CandidateStatus;
+            var candidateStatus = Node.Status as CandidateStatus;
             _votes = candidateStatus?.ConfirmedNodes;
         }
 
@@ -31,7 +30,6 @@ namespace Raft.NodeStrategy
                     break;
 
                 case MessageType.LogUpdateConfirmation:
-                    BecomeFollower(message);
                     break;
 
                 case MessageType.LogCommit:
@@ -46,15 +44,15 @@ namespace Raft.NodeStrategy
                     break;
                 
                 case MessageType.VoteRequest:
-                    if (message.Term > _node.Status.Term)
+                    if (message.Term > Node.Status.Term)
                     {
                         BecomeFollower(message);
-                        _node.Vote(message.Term, message.SenderName, message.Id);
+                        Node.Vote(message.Term, message.SenderName, message.Id);
                     }
                     break;
                 
                 case MessageType.LeaderVote:
-                    if (message.Term > _node.Status.Term)
+                    if (message.Term > Node.Status.Term)
                     {
                         BecomeFollower(message);
                         break;
@@ -77,19 +75,9 @@ namespace Raft.NodeStrategy
             _votes.Add(message.SenderName);
         }
 
-        private void BecomeLeader()
-        {
-            _node.Status = new LeaderStatus(_node.Status.Term);
-        }
-
         private bool HasMajority()
         {
             return _votes.Count > _nodesCount / 2;
-        }
-
-        private void BecomeFollower(NodeMessage message)
-        {
-            _node.Status = new FollowerStatus(message.Term);
         }
     }
 }

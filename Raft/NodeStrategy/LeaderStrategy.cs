@@ -7,13 +7,11 @@ namespace Raft.NodeStrategy
     /// <summary>
     /// Leader node strategy for responding to Raft messages
     /// </summary>
-    public class LeaderStrategy: IMessageResponseStrategy
+    public class LeaderStrategy: BaseStrategy, IMessageResponseStrategy
     {
         private readonly LeaderStatus _status;
 
         private readonly int _nodesCount;
-        private Node Node { get; }
-        
 
         public LeaderStrategy(Node node, int nodesCount)
         {
@@ -44,10 +42,13 @@ namespace Raft.NodeStrategy
                     break;
 
                 case MessageType.LogUpdate:
+                    BecomeFollowerIfSentFromNewerLeader(message);
                     break;
                 case MessageType.LogCommit:
+                    BecomeFollowerIfSentFromNewerLeader(message);
                     break;
                 case MessageType.Info:
+                    BecomeFollowerIfSentFromNewerLeader(message);
                     break;
                 case MessageType.VoteRequest:
                     break;
@@ -55,6 +56,14 @@ namespace Raft.NodeStrategy
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private void BecomeFollowerIfSentFromNewerLeader(NodeMessage message)
+        {
+            if (message.Term > Node.Status.Term)
+            {
+                BecomeFollower(message);
             }
         }
 
