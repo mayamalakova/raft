@@ -7,11 +7,11 @@ namespace Raft.NodeStrategy
     /// <summary>
     /// Follower node strategy for responding to Raft messages
     /// </summary>
-    public class FollowerMessageResponseStrategy: IMessageResponseStrategy
+    public class FollowerStrategy: IMessageResponseStrategy
     {
         private Node Node { get; }
 
-        public FollowerMessageResponseStrategy(Node node)
+        public FollowerStrategy(Node node)
         {
             Node = node;
         }

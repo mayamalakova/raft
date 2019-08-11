@@ -8,14 +8,14 @@ namespace Raft.NodeStrategy
     /// <summary>
     /// Candidate node strategy for responding to Raft messages
     /// </summary>
-    public class CandidateMessageResponseStrategy : IMessageResponseStrategy
+    public class CandidateStrategy : IMessageResponseStrategy
     {
         private readonly Node _node;
         private readonly int _nodesCount;
         private int _term;
         private readonly HashSet<string> _votes;
 
-        public CandidateMessageResponseStrategy(Node node, int nodesCount, int term)
+        public CandidateStrategy(Node node, int nodesCount, int term)
         {
             _node = node;
             _nodesCount = nodesCount;

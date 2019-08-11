@@ -7,7 +7,7 @@ namespace Raft.NodeStrategy
     /// <summary>
     /// Leader node strategy for responding to Raft messages
     /// </summary>
-    public class LeaderMessageResponseStrategy: IMessageResponseStrategy
+    public class LeaderStrategy: IMessageResponseStrategy
     {
         private readonly LeaderStatus _status;
 
@@ -15,7 +15,7 @@ namespace Raft.NodeStrategy
         private Node Node { get; }
         
 
-        public LeaderMessageResponseStrategy(Node node, int nodesCount)
+        public LeaderStrategy(Node node, int nodesCount)
         {
             _nodesCount = nodesCount;
             Node = node;

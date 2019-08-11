@@ -21,11 +21,11 @@ namespace Raft.NodeStrategy
             switch (node.Status.Name)
             {
                     case NodeStatus.Follower:
-                        return new FollowerMessageResponseStrategy(node);
+                        return new FollowerStrategy(node);
                     case NodeStatus.Leader:
-                        return new LeaderMessageResponseStrategy(node, _count);
+                        return new LeaderStrategy(node, _count);
                     case NodeStatus.Candidate:
-                        return new CandidateMessageResponseStrategy(node, _count, node.Status.Term + 1);
+                        return new CandidateStrategy(node, _count, node.Status.Term + 1);
                     default: throw new ArgumentException("Unknown status");
             }
         }
