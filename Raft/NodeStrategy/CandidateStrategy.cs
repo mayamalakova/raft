@@ -41,7 +41,6 @@ namespace Raft.NodeStrategy
                     break;
 
                 case MessageType.ValueUpdate:
-                    BecomeFollower(message);
                     break;
                 
                 case MessageType.Info:

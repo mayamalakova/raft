@@ -48,15 +48,24 @@ namespace Raft.Test.Strategy
 
         [TestCase(MessageType.LogUpdate)]
         [TestCase(MessageType.LogCommit)]
-        [TestCase(MessageType.ValueUpdate)]
         [TestCase(MessageType.LogUpdateConfirmation)]
         [TestCase(MessageType.Info)]
         public void BecomeFollower_OnAnotherLeaderFound(MessageType messageType)
         {
-            var valueUpdate = new NodeMessage(0, CandidateName, messageType, "L", Guid.Empty);
-            _candidateStrategy.RespondToMessage(valueUpdate);
+            var fromLeader = new NodeMessage(0, CandidateName, messageType, "L", Guid.Empty);
+            _candidateStrategy.RespondToMessage(fromLeader);
             
             _node.Status.Name.ShouldBe(NodeStatus.Follower);
+        }
+        
+        [Test]
+        public void IgnoreClientRequests()
+        {
+            var valueUpdate = new NodeMessage(0, CandidateName, MessageType.ValueUpdate, null, Guid.Empty);
+            _candidateStrategy.RespondToMessage(valueUpdate);
+            
+            _node.Status.Name.ShouldBe(NodeStatus.Candidate);
+            _messageBroker.Received(0).Broadcast(Arg.Any<NodeMessage>());
         }
 
         [Test]
