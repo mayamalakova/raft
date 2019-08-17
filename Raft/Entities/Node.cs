@@ -92,5 +92,23 @@ namespace Raft.Entities
             var voteMessage = new NodeMessage(Status.Term, Name, MessageType.Info, Name, Guid.Empty);
                         Broker.Broadcast(voteMessage);
         }
+
+        public void ResendVoteRequest()
+        {
+            var newTerm = Status.Term + 1;
+            Status.Term = newTerm;
+            var message = new NodeMessage(newTerm, Name, MessageType.VoteRequest, Name, Guid.NewGuid());
+            Broker.Broadcast(message);
+        }
+
+        public void BecomeCandidate()
+        {
+            var newTerm = Status.Term + 1;
+
+            Logger.Debug($"{Name} becomes candidate, term: {newTerm}");
+
+            Status = new CandidateStatus(newTerm);
+            SendVoteRequest(newTerm);
+        }
     }
 }

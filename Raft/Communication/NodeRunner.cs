@@ -52,7 +52,7 @@ namespace Raft.Communication
         {
             _strategySelector.SelectStrategy(Node).RespondToMessage(message);
         }
-
+        
         public void Start()
         {
             _timer.Start();
@@ -60,43 +60,10 @@ namespace Raft.Communication
             _timer.Elapsed += (sender, args) =>
             {
                 _timer.Reset();
-                switch (Node.Status.Name)
-                {
-                    case NodeStatus.Leader:
-                        Node.SendPing();
-                        break;
-                    
-                    case NodeStatus.Candidate:
-                        RequestVote();
-                        break;
-                    
-                    case NodeStatus.Follower:
-                        BecomeCandidate();
-                        break;
-                    
-                    default:
-                        throw new ArgumentException("Unknown node status");
-                }
+                _strategySelector.SelectStrategy(Node).OnTimerElapsed();
             };
         }
 
-        private void RequestVote()
-        {
-            var newTerm = Node.Status.Term + 1;
-            Node.Status.Term = newTerm;
-            Node.SendVoteRequest(newTerm);
-        }
-
-        private void BecomeCandidate()
-        {
-            var newTerm = Node.Status.Term + 1;
-            
-            Logger.Debug($"{Node.Name} becomes candidate, term: {newTerm}");
-            
-            Node.Status = new CandidateStatus(newTerm);
-            Node.SendVoteRequest(newTerm);
-        }
-        
         private static bool FromLeader(NodeMessage message)
         {
             return message.Type == MessageType.Info || message.Type == MessageType.LogUpdate ||

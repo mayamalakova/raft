@@ -50,6 +50,11 @@ namespace Raft.NodeStrategy
             }
         }
 
+        public void OnTimerElapsed()
+        {
+            Node.BecomeCandidate();
+        }
+
         private void Vote(NodeMessage message)
         {
             Node.Vote(message.Term, message.SenderName, message.Id);
