@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Timers;
 using NSubstitute;
 using NUnit.Framework;
 using Raft.Communication;
@@ -17,6 +16,7 @@ namespace Raft.Test.Communication
         private NodeRunner _leaderNodeRunner;
         private IMessageBroker _messageBroker;
         private Node _node;
+        private ITimer _timer;
         private const string NodeName = "test";
 
         [SetUp]
@@ -24,7 +24,8 @@ namespace Raft.Test.Communication
         {
             _messageBroker = Substitute.For<IMessageBroker>();
             _node = new Node(NodeName, _messageBroker) {Status = new LeaderStatus(0)};
-            _leaderNodeRunner = new NodeRunner(_node, new Timer(1000), new StrategySelector(3));
+            _timer = Substitute.For<ITimer>();
+            _leaderNodeRunner = new NodeRunner(_node, _timer, new StrategySelector(3));
         }
         
         [Test]
@@ -70,6 +71,14 @@ namespace Raft.Test.Communication
         public void DisplayStatus()
         {
             _leaderNodeRunner.ToString().ShouldBe($"{NodeName} (0) L - {_node.Value}");
+        }
+        
+        [Test]
+        public void NotResetTimer_WhenMessageFromLeaderReceived()
+        {
+            _leaderNodeRunner.ReceiveMessage(new NodeMessage(1, "test", MessageType.Info, "someSender", Guid.Empty));
+            
+            _timer.Received(0).Reset();
         }
     }
 }

@@ -2,7 +2,6 @@ using System;
 using NLog;
 using Raft.Entities;
 using Raft.NodeStrategy;
-using Timer = System.Timers.Timer;
 
 namespace Raft.Communication
 {
@@ -13,7 +12,7 @@ namespace Raft.Communication
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        private readonly Timer _timer;
+        private readonly ITimer _timer;
 
         private readonly StrategySelector _strategySelector;
 
@@ -27,7 +26,7 @@ namespace Raft.Communication
             return $"{Name} ({Node.Status.Term}) {Node.Status} - {Node.Value}".Replace("  ", " ");
         }
 
-        public NodeRunner(Node node, Timer timer, StrategySelector strategySelector)
+        public NodeRunner(Node node, ITimer timer, StrategySelector strategySelector)
         {
             Node = node;
             _strategySelector = strategySelector;
@@ -43,16 +42,10 @@ namespace Raft.Communication
 
             if (Node.Status.Name != NodeStatus.Leader && (FromLeader(message) || message.Type == MessageType.VoteRequest))
             {
-                RestartElectionTimeout();
+                _timer.Reset();
             }
 
             RespondToMessage(message);
-        }
-
-        private static bool FromLeader(NodeMessage message)
-        {
-            return message.Type == MessageType.Info || message.Type == MessageType.LogUpdate ||
-                   message.Type == MessageType.LogCommit;
         }
 
         private void RespondToMessage(NodeMessage message)
@@ -66,18 +59,21 @@ namespace Raft.Communication
 
             _timer.Elapsed += (sender, args) =>
             {
-                RestartElectionTimeout();
+                _timer.Reset();
                 switch (Node.Status.Name)
                 {
                     case NodeStatus.Leader:
                         Node.SendPing();
                         break;
+                    
                     case NodeStatus.Candidate:
                         RequestVote();
                         break;
+                    
                     case NodeStatus.Follower:
                         BecomeCandidate();
                         break;
+                    
                     default:
                         throw new ArgumentException("Unknown node status");
                 }
@@ -100,11 +96,12 @@ namespace Raft.Communication
             Node.Status = new CandidateStatus(newTerm);
             Node.SendVoteRequest(newTerm);
         }
-
-        private void RestartElectionTimeout()
+        
+        private static bool FromLeader(NodeMessage message)
         {
-            _timer.Stop();
-            _timer.Start();
+            return message.Type == MessageType.Info || message.Type == MessageType.LogUpdate ||
+                   message.Type == MessageType.LogCommit;
         }
+
     }
 }
