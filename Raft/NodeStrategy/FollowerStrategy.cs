@@ -39,6 +39,7 @@ namespace Raft.NodeStrategy
                 case MessageType.VoteRequest:
                     if (!Node.HasVotedInTerm(message.Term))
                     {
+                        Node.Status.Term = message.Term;
                         Vote(message);
                     }
                     break;
