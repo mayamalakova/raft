@@ -27,11 +27,11 @@ namespace Raft.Communication
             return $"{Name} ({Node.Status.Term}) {Node.Status} - {Node.Value}".Replace("  ", " ");
         }
 
-        public NodeRunner(Node node, int electionTimeout, StrategySelector strategySelector)
+        public NodeRunner(Node node, Timer timer, StrategySelector strategySelector)
         {
             Node = node;
             _strategySelector = strategySelector;
-            _timer = new Timer(electionTimeout * 10);
+            _timer = timer;
         }
 
         public void ReceiveMessage(NodeMessage message)

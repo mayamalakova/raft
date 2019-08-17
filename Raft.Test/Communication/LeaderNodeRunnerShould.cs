@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Timers;
 using NSubstitute;
 using NUnit.Framework;
 using Raft.Communication;
@@ -23,7 +24,7 @@ namespace Raft.Test.Communication
         {
             _messageBroker = Substitute.For<IMessageBroker>();
             _node = new Node(NodeName, _messageBroker) {Status = new LeaderStatus(0)};
-            _leaderNodeRunner = new NodeRunner(_node, 100, new StrategySelector(3));
+            _leaderNodeRunner = new NodeRunner(_node, new Timer(1000), new StrategySelector(3));
         }
         
         [Test]

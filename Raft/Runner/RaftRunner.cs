@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Timers;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -154,7 +155,8 @@ namespace Raft.Runner
         public NodeRunner InitializeLeader(string name)
         {
             var node = new Node(name, Broker) {Status = new LeaderStatus(0)};
-            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(Nodes.Length));
+            var timer = new Timer(TimeoutGenerator.GenerateElectionTimeout() * 10);
+            var nodeRunner = new NodeRunner(node, timer, new StrategySelector(Nodes.Length));
             
             Broker.Register(nodeRunner);
             return nodeRunner;
@@ -163,7 +165,8 @@ namespace Raft.Runner
         public NodeRunner InitializeFollower(string name)
         {
             var node = new Node(name, Broker) {Status = new FollowerStatus(0)};
-            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(Nodes.Length));
+            var timer = new Timer(TimeoutGenerator.GenerateElectionTimeout() * 10);
+            var nodeRunner = new NodeRunner(node, timer, new StrategySelector(Nodes.Length));
             Broker.Register(nodeRunner);
             return nodeRunner;
         }
