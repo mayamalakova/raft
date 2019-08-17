@@ -18,7 +18,7 @@ namespace Raft.NodeStrategy
 
         protected void BecomeFollower(NodeMessage message)
         {
-            Logger.Debug($"{Node.Name} becomes follower, term: {Node.Status.Term}");
+            Logger.Debug($"{Node.Name} becomes follower of {message.SenderName}, term: {Node.Status.Term}");
             
             Node.Status = new FollowerStatus(message.Term);
         }

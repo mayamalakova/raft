@@ -38,7 +38,6 @@ namespace Raft.Entities
             {
                 return;
             }
-            Logger.Debug($"{Name} committing {message.Id}");
             
             logEntry.Type = OperationType.Commit;
             Value = logEntry.Value;
@@ -51,8 +50,6 @@ namespace Raft.Entities
 
         internal void ConfirmLogUpdate(Guid entryId)
         {
-            Logger.Debug($"node {Name} confirms {entryId}");
-            
             var nodeMessage = new NodeMessage(Status.Term, null, MessageType.LogUpdateConfirmation, Name, entryId);
             Broker.Broadcast(nodeMessage);
         }
@@ -65,8 +62,6 @@ namespace Raft.Entities
 
         internal void SendLogUpdateRequest(NodeMessage message, Guid entryId)
         {
-            Logger.Debug($"{Name} initiating update {entryId}");
-            
             var logUpdate = new NodeMessage(Status.Term, message.Value, MessageType.LogUpdate, Name, entryId);
             Broker.Broadcast(logUpdate);
         }
