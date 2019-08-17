@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -12,6 +13,8 @@ namespace Raft.Runner
 {
     public class RaftRunner
     {
+        private static readonly string[] Nodes = new[] {"L", "A", "B", "C", "D"};
+        
         private static readonly TimeoutGenerator TimeoutGenerator = new TimeoutGenerator();
         private readonly Collection<IMessageBrokerListener> _nodeRunners = new Collection<IMessageBrokerListener>();
         public IMessageBroker Broker { get; } = new MessageBroker();
@@ -20,11 +23,11 @@ namespace Raft.Runner
         {
             ConfigureLogging();
 
-            StartLeaderNode("L");
-            StartNode("A");
-            StartNode("B");
-            StartNode("C");
-            StartNode("D");
+            StartLeaderNode(Nodes[0]);
+            foreach (var node in Nodes.TakeLast(Nodes.Length - 1))
+            {
+                StartNode(node);
+            }
 
             while (true)
             {
@@ -151,7 +154,7 @@ namespace Raft.Runner
         public NodeRunner InitializeLeader(string name)
         {
             var node = new Node(name, Broker) {Status = new LeaderStatus(0)};
-            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(_nodeRunners.Count));
+            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(Nodes.Length));
             
             Broker.Register(nodeRunner);
             return nodeRunner;
@@ -160,7 +163,7 @@ namespace Raft.Runner
         public NodeRunner InitializeFollower(string name)
         {
             var node = new Node(name, Broker) {Status = new FollowerStatus(0)};
-            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(_nodeRunners.Count));
+            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(Nodes.Length));
             Broker.Register(nodeRunner);
             return nodeRunner;
         }
