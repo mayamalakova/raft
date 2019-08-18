@@ -10,6 +10,8 @@ namespace Raft.Test.Strategy
     [TestFixture]
     public class FollowerStrategyShould
     {
+        private const string FollowerName = "F";
+        
         private Node _node;
         private FollowerStrategy _followerStrategy;
         private IMessageBroker _messageBroker;
@@ -18,7 +20,7 @@ namespace Raft.Test.Strategy
         public void SetUp()
         {
             _messageBroker = Substitute.For<IMessageBroker>();
-            _node = new Node("F", _messageBroker)
+            _node = new Node(FollowerName, _messageBroker)
             {
                 Status = new FollowerStatus(0)
             };
@@ -36,7 +38,7 @@ namespace Raft.Test.Strategy
             
             _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(
                 m => m.Type == MessageType.LogUpdateConfirmation &&
-                     m.SenderName == "F"));
+                     m.SenderName == FollowerName));
         }
 
         [Test]
@@ -63,6 +65,25 @@ namespace Raft.Test.Strategy
             
             _node.LastLogEntry().Value.ShouldBe("current entry");
             _node.LastLogEntry().Type.ShouldBe(OperationType.Update);
+        }
+
+        [Test]
+        public void VoteForLeader_WhenNotVotedInTerm()
+        {
+            var voteRequest = new NodeMessage(1, "new candidate", MessageType.VoteRequest, "C", Guid.NewGuid());
+            _followerStrategy.RespondToMessage(voteRequest);
+            
+            _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(
+                m => m.Type == MessageType.LeaderVote && m.SenderName == FollowerName));
+        }
+        
+        [Test]
+        public void NotVoteForLeader_WhenAlreadyVotedInTerm()
+        {
+            var voteRequest = new NodeMessage(0, "new candidate", MessageType.VoteRequest, "C", Guid.NewGuid());
+            _followerStrategy.RespondToMessage(voteRequest);
+            
+            _messageBroker.Received(0).Broadcast(Arg.Any<NodeMessage>());
         }
         
     }
