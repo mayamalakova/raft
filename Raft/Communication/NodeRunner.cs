@@ -18,8 +18,6 @@ namespace Raft.Communication
 
         private Node Node { get; }
         public string Name => Node.Name;
-        public bool IsLeading => Node.Status.Name == NodeStatus.Leader;
-        public int Term => Node.Status.Term;
 
         public override string ToString()
         {
@@ -68,12 +66,5 @@ namespace Raft.Communication
                 _strategySelector.SelectTimerStrategy(Node).OnTimerElapsed();
             };
         }
-
-        private static bool FromLeader(NodeMessage message)
-        {
-            return message.Type == MessageType.Info || message.Type == MessageType.LogUpdate ||
-                   message.Type == MessageType.LogCommit;
-        }
-
     }
 }
