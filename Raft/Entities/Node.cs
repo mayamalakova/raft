@@ -38,7 +38,6 @@ namespace Raft.Entities
             {
                 return;
             }
-            Logger.Debug($"{Name} committing {message.Id}");
             
             logEntry.Type = OperationType.Commit;
             Value = logEntry.Value;
@@ -51,8 +50,6 @@ namespace Raft.Entities
 
         internal void ConfirmLogUpdate(Guid entryId)
         {
-            Logger.Debug($"node {Name} confirms {entryId}");
-            
             var nodeMessage = new NodeMessage(Status.Term, null, MessageType.LogUpdateConfirmation, Name, entryId);
             Broker.Broadcast(nodeMessage);
         }
@@ -65,8 +62,6 @@ namespace Raft.Entities
 
         internal void SendLogUpdateRequest(NodeMessage message, Guid entryId)
         {
-            Logger.Debug($"{Name} initiating update {entryId}");
-            
             var logUpdate = new NodeMessage(Status.Term, message.Value, MessageType.LogUpdate, Name, entryId);
             Broker.Broadcast(logUpdate);
         }
@@ -79,6 +74,8 @@ namespace Raft.Entities
 
         public void Vote(int term, string leader, Guid electionId)
         {
+            Logger.Debug($"{Name} votes for {leader}");
+            
             var voteMessage = new NodeMessage(term, leader, MessageType.LeaderVote, Name, electionId);
             Broker.Broadcast(voteMessage);
         }
@@ -86,6 +83,32 @@ namespace Raft.Entities
         public bool HasVotedInTerm(int term)
         {
             return Status.Term >= term;
+        }
+
+        public void SendPing()
+        {
+            Logger.Debug($"{Name} sends ping");
+            
+            var voteMessage = new NodeMessage(Status.Term, Name, MessageType.Info, Name, Guid.Empty);
+                        Broker.Broadcast(voteMessage);
+        }
+
+        public void ResendVoteRequest()
+        {
+            var newTerm = Status.Term + 1;
+            Status.Term = newTerm;
+            var message = new NodeMessage(newTerm, Name, MessageType.VoteRequest, Name, Guid.NewGuid());
+            Broker.Broadcast(message);
+        }
+
+        public void BecomeCandidate()
+        {
+            var newTerm = Status.Term + 1;
+
+            Logger.Debug($"{Name} becomes candidate, term: {newTerm}");
+
+            Status = new CandidateStatus(newTerm);
+            SendVoteRequest(newTerm);
         }
     }
 }

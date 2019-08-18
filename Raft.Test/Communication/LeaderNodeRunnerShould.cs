@@ -16,6 +16,7 @@ namespace Raft.Test.Communication
         private NodeRunner _leaderNodeRunner;
         private IMessageBroker _messageBroker;
         private Node _node;
+        private ITimer _timer;
         private const string NodeName = "test";
 
         [SetUp]
@@ -23,7 +24,8 @@ namespace Raft.Test.Communication
         {
             _messageBroker = Substitute.For<IMessageBroker>();
             _node = new Node(NodeName, _messageBroker) {Status = new LeaderStatus(0)};
-            _leaderNodeRunner = new NodeRunner(_node, 100, new StrategySelector(3));
+            _timer = Substitute.For<ITimer>();
+            _leaderNodeRunner = new NodeRunner(_node, _timer, new StrategySelector(3));
         }
         
         [Test]
@@ -70,5 +72,23 @@ namespace Raft.Test.Communication
         {
             _leaderNodeRunner.ToString().ShouldBe($"{NodeName} (0) L - {_node.Value}");
         }
+        
+        [Test]
+        public void NotResetTimer_WhenMessageFromOldLeaderReceived()
+        {
+            _leaderNodeRunner.ReceiveMessage(new NodeMessage(0, "test", MessageType.Info, "someSender", Guid.Empty));
+            
+            _timer.Received(0).Reset();
+        }
+
+        [Test]
+        public void ResetTimer_WhenMessageFromNewLeaderReceived()
+        {
+            var message = new NodeMessage(1, TestValue, MessageType.Info, "NewLeader", Guid.Empty);
+            _leaderNodeRunner.ReceiveMessage(message);
+            
+            _timer.Received(1).Reset();
+        }
+
     }
 }

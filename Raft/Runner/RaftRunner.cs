@@ -13,6 +13,8 @@ namespace Raft.Runner
 {
     public class RaftRunner
     {
+        private static readonly string[] Nodes = new[] {"L", "A", "B", "C", "D"};
+        
         private static readonly TimeoutGenerator TimeoutGenerator = new TimeoutGenerator();
         private readonly Collection<IMessageBrokerListener> _nodeRunners = new Collection<IMessageBrokerListener>();
         public IMessageBroker Broker { get; } = new MessageBroker();
@@ -21,10 +23,11 @@ namespace Raft.Runner
         {
             ConfigureLogging();
 
-            StartLeaderNode("L");
-            StartNode("A");
-            StartNode("B");
-            StartNode("C");
+            StartLeaderNode(Nodes[0]);
+            foreach (var node in Nodes.TakeLast(Nodes.Length - 1))
+            {
+                StartNode(node);
+            }
 
             while (true)
             {
@@ -108,11 +111,11 @@ namespace Raft.Runner
             config.AddTarget(fileTarget);
             config.AddTarget(consoleTarget);
 
-            config.AddRuleForOneLevel(LogLevel.Debug, fileTarget);
-            config.AddRuleForOneLevel(LogLevel.Info, fileTarget);
-            config.AddRuleForOneLevel(LogLevel.Warn, fileTarget);
-            config.AddRuleForOneLevel(LogLevel.Error, fileTarget);
-            config.AddRuleForOneLevel(LogLevel.Fatal, fileTarget);
+            config.AddRuleForOneLevel(LogLevel.Debug, consoleTarget);
+            config.AddRuleForOneLevel(LogLevel.Info, consoleTarget);
+            config.AddRuleForOneLevel(LogLevel.Warn, consoleTarget);
+            config.AddRuleForOneLevel(LogLevel.Error, consoleTarget);
+            config.AddRuleForOneLevel(LogLevel.Fatal, consoleTarget);
 
             LogManager.Configuration = config;
         }
@@ -151,7 +154,8 @@ namespace Raft.Runner
         public NodeRunner InitializeLeader(string name)
         {
             var node = new Node(name, Broker) {Status = new LeaderStatus(0)};
-            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(4));
+            var timer = new ElectionTimer(TimeoutGenerator.GenerateElectionTimeout() * 10);
+            var nodeRunner = new NodeRunner(node, timer, new StrategySelector(Nodes.Length));
             
             Broker.Register(nodeRunner);
             return nodeRunner;
@@ -160,7 +164,8 @@ namespace Raft.Runner
         public NodeRunner InitializeFollower(string name)
         {
             var node = new Node(name, Broker) {Status = new FollowerStatus(0)};
-            var nodeRunner = new NodeRunner(node, TimeoutGenerator.GenerateElectionTimeout(), new StrategySelector(4));
+            var timer = new ElectionTimer(TimeoutGenerator.GenerateElectionTimeout() * 10);
+            var nodeRunner = new NodeRunner(node, timer, new StrategySelector(Nodes.Length));
             Broker.Register(nodeRunner);
             return nodeRunner;
         }

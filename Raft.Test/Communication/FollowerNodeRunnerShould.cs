@@ -12,18 +12,20 @@ namespace Raft.Test.Communication
     public class FollowerNodeRunnerShould
     {
         private const string TestValue = "test-message";
-        private const string TestName = "test";
+        private const string NodeName = "test";
 
         private NodeRunner _nodeRunner;
         private IMessageBroker _messageBroker;
         private Node _node;
+        private ITimer _timer;
 
         [SetUp]
         public void SetUp()
         {
             _messageBroker = Substitute.For<IMessageBroker>();
-            _node = new Node(TestName, _messageBroker) {Status = new FollowerStatus(0)};
-            _nodeRunner = new NodeRunner(_node, 100, new StrategySelector(3));
+            _node = new Node(NodeName, _messageBroker) {Status = new FollowerStatus(0)};
+            _timer = Substitute.For<ITimer>();
+            _nodeRunner = new NodeRunner(_node, _timer, new StrategySelector(3));
         }
         
         [Test]
@@ -54,7 +56,23 @@ namespace Raft.Test.Communication
         [Test]
         public void DisplayStatus()
         {
-            _nodeRunner.ToString().ShouldBe($"{TestName} (0) F - ");
+            _nodeRunner.ToString().ShouldBe($"{NodeName} (0) F - ");
+        }
+
+        [Test]
+        public void ResetTimer_WhenMessageFromLeaderReceived()
+        {
+            _nodeRunner.ReceiveMessage(new NodeMessage(1, "test", MessageType.Info, "someSender", Guid.Empty));
+            
+            _timer.Received(1).Reset();
+        }
+        
+        [Test]
+        public void NotResetTimer_WhenMessageIsFromItself()
+        {
+            _nodeRunner.ReceiveMessage(new NodeMessage(1, "test", MessageType.Info, NodeName, Guid.Empty));
+            
+            _timer.Received(0).Reset();
         }
     }
 }

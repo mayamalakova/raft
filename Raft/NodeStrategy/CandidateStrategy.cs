@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using NLog;
 using Raft.Communication;
 using Raft.Entities;
 
@@ -10,6 +11,8 @@ namespace Raft.NodeStrategy
     /// </summary>
     public class CandidateStrategy : BaseStrategy, IMessageResponseStrategy
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        
         private readonly int _nodesCount;
         private readonly HashSet<string> _votes;
 
@@ -27,6 +30,7 @@ namespace Raft.NodeStrategy
             {
                 case MessageType.LogUpdate:
                     BecomeFollower(message);
+                    ConfirmLogUpdate(message);
                     break;
 
                 case MessageType.LogUpdateConfirmation:
@@ -61,6 +65,7 @@ namespace Raft.NodeStrategy
                     AddVote(message);
                     if (HasMajority())
                     {
+                        Logger.Debug($"{Node.Name} has majority {_votes.Count} / {_nodesCount}");
                         BecomeLeader();
                     }
                     break;
@@ -69,6 +74,8 @@ namespace Raft.NodeStrategy
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        
 
         private void AddVote(NodeMessage message)
         {

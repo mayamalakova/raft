@@ -61,10 +61,15 @@ namespace Raft.NodeStrategy
 
         private void BecomeFollowerIfSentFromNewerLeader(NodeMessage message)
         {
-            if (message.Term > Node.Status.Term)
+            if (FromLeaderWithHigherTerm(message))
             {
                 BecomeFollower(message);
             }
+        }
+
+        private bool FromLeaderWithHigherTerm(NodeMessage message)
+        {
+            return message.Term >= Node.Status.Term;
         }
 
         private void ResetUpdateConfirmations()
@@ -97,7 +102,7 @@ namespace Raft.NodeStrategy
 
         private bool ConfirmsLastEntry(NodeMessage message)
         {
-            return message.Id == Node.LastLogEntry().Id;
+            return message.Id == Node.LastLogEntry()?.Id;
         }
     }
 }

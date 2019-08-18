@@ -87,5 +87,6 @@ namespace Raft.Test.Strategy
             
             _node.Status.Name.ShouldBe(NodeStatus.Follower);
         }
+
     }
 }

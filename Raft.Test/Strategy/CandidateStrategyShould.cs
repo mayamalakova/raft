@@ -56,6 +56,18 @@ namespace Raft.Test.Strategy
             
             _node.Status.Name.ShouldBe(NodeStatus.Follower);
         }
+
+        [Test]
+        public void BecomeFollowerAndUpdateLog_OnLogUpdate()
+        {
+            var fromLeader = new NodeMessage(0, "new value", MessageType.LogUpdate, "L", Guid.Empty);
+            _candidateStrategy.RespondToMessage(fromLeader);
+            
+            _node.Status.Name.ShouldBe(NodeStatus.Follower);
+            _node.Log.Count.ShouldBe(1);
+            _node.LastLogEntry().Value.ShouldBe("new value");
+            _node.LastLogEntry().Type.ShouldBe(OperationType.Update);
+        }
         
         [Test]
         public void IgnoreClientRequests()
@@ -78,5 +90,6 @@ namespace Raft.Test.Strategy
             _messageBroker.Received(1)
                 .Broadcast(message: Arg.Is<NodeMessage>(m => m.Type == MessageType.LeaderVote && m.SenderName == CandidateName));
         }
+
     }
 }

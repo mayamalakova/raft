@@ -32,12 +32,14 @@ namespace Raft.NodeStrategy
 
                 case MessageType.ValueUpdate:
                     break;
+                
                 case MessageType.Info:
                     break;
                 
                 case MessageType.VoteRequest:
                     if (!Node.HasVotedInTerm(message.Term))
                     {
+                        Node.Status.Term = message.Term;
                         Vote(message);
                     }
                     break;
@@ -56,12 +58,6 @@ namespace Raft.NodeStrategy
         private void CommitLog(NodeMessage message)
         {
             Node.CommitLog(message);
-        }
-
-        private void ConfirmLogUpdate(NodeMessage message)
-        {
-            Node.UpdateLog(message, message.Id);
-            Node.ConfirmLogUpdate(message.Id);
         }
     }
 }
