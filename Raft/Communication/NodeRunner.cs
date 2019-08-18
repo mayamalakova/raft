@@ -65,7 +65,7 @@ namespace Raft.Communication
             _timer.Elapsed += (sender, args) =>
             {
                 _timer.Reset();
-                _strategySelector.SelectResponseStrategy(Node).OnTimerElapsed();
+                _strategySelector.SelectTimerStrategy(Node).OnTimerElapsed();
             };
         }
 

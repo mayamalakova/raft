@@ -8,6 +8,5 @@ namespace Raft.Communication
     public interface IMessageResponseStrategy
     {
         void RespondToMessage(NodeMessage message);
-        void OnTimerElapsed();
     }
 }

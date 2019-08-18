@@ -1,4 +1,3 @@
-using System;
 using Raft.Communication;
 using Raft.Entities;
 
@@ -15,7 +14,7 @@ namespace Raft.NodeStrategy.Timer
 
         public void OnTimerElapsed()
         {
-            throw new NotImplementedException();
+            _node.BecomeCandidate();
         }
 
         public bool ShouldReset(NodeMessage message)

@@ -65,13 +65,5 @@ namespace Raft.Test.Strategy
             _node.LastLogEntry().Type.ShouldBe(OperationType.Update);
         }
         
-        
-        [Test]
-        public void BecomeCandidate_OnTimerElapsed()
-        {
-            _followerStrategy.OnTimerElapsed();
-            
-            _node.Status.Name.ShouldBe(NodeStatus.Candidate);      
-        }
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using NSubstitute;
 using NUnit.Framework;
-using Raft.Communication;
 using Raft.Entities;
 using Raft.NodeStrategy.Timer;
 using Shouldly;
@@ -12,7 +11,7 @@ namespace Raft.Test.Strategy.Timer
     public class FollowerTimerStrategyShould
     {
         private Node _follower;
-        private ITimerStrategy _followerTimerStrategy;
+        private FollowerTimerStrategy _followerTimerStrategy;
 
         [SetUp]
         public void SetUp()
@@ -41,6 +40,14 @@ namespace Raft.Test.Strategy.Timer
             var shouldReset = _followerTimerStrategy.ShouldReset(nodeMessage);
             
             shouldReset.ShouldBeTrue();
+        }
+        
+        [Test]
+        public void BecomeCandidate_OnTimerElapsed()
+        {
+            _followerTimerStrategy.OnTimerElapsed();
+            
+            _follower.Status.Name.ShouldBe(NodeStatus.Candidate);      
         }
     }
 }

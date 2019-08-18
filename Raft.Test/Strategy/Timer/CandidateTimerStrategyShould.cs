@@ -12,19 +12,22 @@ namespace Raft.Test.Strategy.Timer
     {
         private Node _candidate;
         private ITimerStrategy _candidateTimerStrategy;
+        private IMessageBroker _messageBroker;
 
         [SetUp]
         public void SetUp()
         {
-            _candidate = new Node("Candidate", Substitute.For<IMessageBroker>());
+            _messageBroker = Substitute.For<IMessageBroker>();
+            _candidate = new Node("Candidate", _messageBroker)
+            {
+                Status = new CandidateStatus(1)
+            };
             _candidateTimerStrategy = new CandidateTimerStrategy(node: _candidate);
         }
         
         [Test]
         public void ResetTimer_WhenMessageFromLeaderReceived()
         {
-            _candidate.Status = new CandidateStatus(1);
-
             var nodeMessage = new NodeMessage(0, "ping", MessageType.Info, "Leader", Guid.Empty);
             var shouldReset = _candidateTimerStrategy.ShouldReset(nodeMessage);
             
@@ -34,12 +37,18 @@ namespace Raft.Test.Strategy.Timer
         [Test]
         public void ResetTimer_WhenMessageFromAnotherCandidateReceived()
         {
-            _candidate.Status = new CandidateStatus(1);
-
             var nodeMessage = new NodeMessage(2, "new candidate", MessageType.VoteRequest, "anotherCandidate", Guid.Empty);
             var shouldReset = _candidateTimerStrategy.ShouldReset(nodeMessage);
             
             shouldReset.ShouldBeTrue();
+        }
+        
+        [Test]
+        public void ResendVoteRequest_OnTimerElapsed()
+        {
+            _candidateTimerStrategy.OnTimerElapsed();
+            
+            _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.VoteRequest));
         }
     }
 }

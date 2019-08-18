@@ -75,10 +75,7 @@ namespace Raft.NodeStrategy
             }
         }
 
-        public void OnTimerElapsed()
-        {
-            Node.ResendVoteRequest();
-        }
+        
 
         private void AddVote(NodeMessage message)
         {

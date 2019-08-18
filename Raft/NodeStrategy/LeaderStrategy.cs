@@ -59,11 +59,6 @@ namespace Raft.NodeStrategy
             }
         }
 
-        public void OnTimerElapsed()
-        {
-            Node.SendPing();
-        }
-
         private void BecomeFollowerIfSentFromNewerLeader(NodeMessage message)
         {
             if (FromLeaderWithHigherTerm(message))

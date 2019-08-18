@@ -91,12 +91,5 @@ namespace Raft.Test.Strategy
                 .Broadcast(message: Arg.Is<NodeMessage>(m => m.Type == MessageType.LeaderVote && m.SenderName == CandidateName));
         }
 
-        [Test]
-        public void ResendVoteRequest_OnTimerElapsed()
-        {
-            _candidateStrategy.OnTimerElapsed();
-            
-            _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.VoteRequest));
-        }
     }
 }

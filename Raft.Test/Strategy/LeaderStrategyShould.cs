@@ -88,13 +88,5 @@ namespace Raft.Test.Strategy
             _node.Status.Name.ShouldBe(NodeStatus.Follower);
         }
 
-        [Test]
-        public void Ping_OnTimerElapsed()
-        {
-            _leaderStrategy.OnTimerElapsed();
-            
-            _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.Info));
-        }
-
     }
 }
