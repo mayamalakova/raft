@@ -40,7 +40,7 @@ namespace Raft.Communication
                 return;
             }
 
-            if (Node.Status.Name != NodeStatus.Leader && (FromLeader(message) || message.Type == MessageType.VoteRequest))
+            if (ShouldResetTimer(message))
             {
                 _timer.Reset();
             }
@@ -48,9 +48,14 @@ namespace Raft.Communication
             RespondToMessage(message);
         }
 
+        private bool ShouldResetTimer(NodeMessage message)
+        {
+            return _strategySelector.SelectTimerStrategy(Node).ShouldReset(message);
+        }
+
         private void RespondToMessage(NodeMessage message)
         {
-            _strategySelector.SelectStrategy(Node).RespondToMessage(message);
+            _strategySelector.SelectResponseStrategy(Node).RespondToMessage(message);
         }
         
         public void Start()
@@ -60,7 +65,7 @@ namespace Raft.Communication
             _timer.Elapsed += (sender, args) =>
             {
                 _timer.Reset();
-                _strategySelector.SelectStrategy(Node).OnTimerElapsed();
+                _strategySelector.SelectResponseStrategy(Node).OnTimerElapsed();
             };
         }
 

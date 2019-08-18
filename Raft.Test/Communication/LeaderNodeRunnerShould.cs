@@ -74,11 +74,21 @@ namespace Raft.Test.Communication
         }
         
         [Test]
-        public void NotResetTimer_WhenMessageFromLeaderReceived()
+        public void NotResetTimer_WhenMessageFromOldLeaderReceived()
         {
-            _leaderNodeRunner.ReceiveMessage(new NodeMessage(1, "test", MessageType.Info, "someSender", Guid.Empty));
+            _leaderNodeRunner.ReceiveMessage(new NodeMessage(0, "test", MessageType.Info, "someSender", Guid.Empty));
             
             _timer.Received(0).Reset();
         }
+
+        [Test]
+        public void ResetTimer_WhenMessageFromNewLeaderReceived()
+        {
+            var message = new NodeMessage(1, TestValue, MessageType.Info, "NewLeader", Guid.Empty);
+            _leaderNodeRunner.ReceiveMessage(message);
+            
+            _timer.Received(1).Reset();
+        }
+
     }
 }
