@@ -20,9 +20,7 @@ namespace Raft.Entities
 
     public enum OperationType
     {
-        Add,
         Update,
-        Remove,
         Commit
     }
 }

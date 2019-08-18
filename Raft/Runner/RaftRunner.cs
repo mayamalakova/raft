@@ -13,7 +13,7 @@ namespace Raft.Runner
 {
     public class RaftRunner
     {
-        private static readonly string[] Nodes = new[] {"L", "A", "B", "C", "D"};
+        private static readonly string[] Nodes = {"L", "A", "B", "C", "D"};
         
         private static readonly TimeoutGenerator TimeoutGenerator = new TimeoutGenerator();
         private readonly Collection<IMessageBrokerListener> _nodeRunners = new Collection<IMessageBrokerListener>();

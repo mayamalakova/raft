@@ -66,7 +66,7 @@ namespace Raft.Entities
             Broker.Broadcast(logUpdate);
         }
 
-        public void SendVoteRequest(int term)
+        private void SendVoteRequest(int term)
         {
             var message = new NodeMessage(term, Name, MessageType.VoteRequest, Name, Guid.NewGuid());
             Broker.Broadcast(message);
