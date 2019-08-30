@@ -72,11 +72,11 @@ namespace Raft.Entities
             Broker.Broadcast(message);
         }
 
-        public void Vote(int term, string leader, Guid electionId)
+        public void Vote(int term, string candidate, Guid electionId)
         {
-            Logger.Debug($"{Name} votes for {leader}");
+            Logger.Debug($"{Name} votes for {candidate}");
             
-            var voteMessage = new NodeMessage(term, leader, MessageType.LeaderVote, Name, electionId);
+            var voteMessage = new NodeMessage(term, candidate, MessageType.LeaderVote, Name, electionId);
             Broker.Broadcast(voteMessage);
         }
 
@@ -87,8 +87,6 @@ namespace Raft.Entities
 
         public void SendPing()
         {
-            Logger.Debug($"{Name} sends ping");
-            
             var voteMessage = new NodeMessage(Status.Term, Name, MessageType.Info, Name, Guid.Empty);
                         Broker.Broadcast(voteMessage);
         }
@@ -96,9 +94,9 @@ namespace Raft.Entities
         public void ResendVoteRequest()
         {
             var newTerm = Status.Term + 1;
+            Logger.Debug($"{Name} resends vote request, term: {newTerm}");
             Status.Term = newTerm;
-            var message = new NodeMessage(newTerm, Name, MessageType.VoteRequest, Name, Guid.NewGuid());
-            Broker.Broadcast(message);
+            SendVoteRequest(newTerm);
         }
 
         public void BecomeCandidate()
