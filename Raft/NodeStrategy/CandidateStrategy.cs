@@ -29,22 +29,35 @@ namespace Raft.NodeStrategy
             switch (message.Type)
             {
                 case MessageType.LogUpdate:
-                    BecomeFollower(message);
-                    ConfirmLogUpdate(message);
+                    if (message.Term > Node.Status.Term)
+                    {
+                        BecomeFollower(message);
+                        ConfirmLogUpdate(message);
+                    }
+                    
                     break;
 
                 case MessageType.LogUpdateConfirmation:
                     break;
 
                 case MessageType.LogCommit:
-                    BecomeFollower(message);
+                    if (message.Term > Node.Status.Term)
+                    {
+                        BecomeFollower(message);
+                        CommitLog(message);
+                    }
+
                     break;
 
                 case MessageType.ValueUpdate:
                     break;
                 
                 case MessageType.Info:
-                    BecomeFollower(message);
+                    if (message.Term > Node.Status.Term)
+                    {
+                        BecomeFollower(message);
+                    }
+
                     break;
                 
                 case MessageType.VoteRequest:
@@ -56,9 +69,8 @@ namespace Raft.NodeStrategy
                     break;
                 
                 case MessageType.LeaderVote:
-                    if (message.Term > Node.Status.Term)
+                    if (message.Value != Node.Name)
                     {
-                        BecomeFollower(message);
                         break;
                     }
                     
@@ -67,6 +79,7 @@ namespace Raft.NodeStrategy
                     {
                         Logger.Debug($"{Node.Name} has majority {_votes.Count} / {_nodesCount}");
                         BecomeLeader();
+                        
                     }
                     break;
                 
