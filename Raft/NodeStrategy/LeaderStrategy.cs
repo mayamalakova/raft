@@ -42,15 +42,21 @@ namespace Raft.NodeStrategy
                     break;
 
                 case MessageType.LogUpdate:
-                    BecomeFollowerIfSentFromNewerLeader(message);
+                    BecomeFollowerIfSentFromNewerTerm(message);
                     break;
                 case MessageType.LogCommit:
-                    BecomeFollowerIfSentFromNewerLeader(message);
+                    BecomeFollowerIfSentFromNewerTerm(message);
                     break;
                 case MessageType.Info:
-                    BecomeFollowerIfSentFromNewerLeader(message);
+                    BecomeFollowerIfSentFromNewerTerm(message);
                     break;
                 case MessageType.VoteRequest:
+                    if (FromHigherTerm(message))
+                    {
+                        BecomeFollower(message);
+                        Node.Vote(message.Term, message.SenderName, message.Id);
+                    }
+
                     break;
                 case MessageType.LeaderVote:
                     break;
@@ -59,15 +65,15 @@ namespace Raft.NodeStrategy
             }
         }
 
-        private void BecomeFollowerIfSentFromNewerLeader(NodeMessage message)
+        private void BecomeFollowerIfSentFromNewerTerm(NodeMessage message)
         {
-            if (FromLeaderWithHigherTerm(message))
+            if (FromHigherTerm(message))
             {
                 BecomeFollower(message);
             }
         }
 
-        private bool FromLeaderWithHigherTerm(NodeMessage message)
+        private bool FromHigherTerm(NodeMessage message)
         {
             return message.Term >= Node.Status.Term;
         }
