@@ -20,14 +20,22 @@ namespace Raft.NodeStrategy
             switch (message.Type)
             {
                 case MessageType.LogUpdate:
-                    ConfirmLogUpdate(message);
+                    if (message.Term == Node.Status.Term)
+                    {
+                        ConfirmLogUpdate(message);
+                    }
+
                     break;
 
                 case MessageType.LogUpdateConfirmation:
                     break;
 
                 case MessageType.LogCommit:
-                    CommitLog(message);
+                    if (message.Term == Node.Status.Term)
+                    {
+                        CommitLog(message);
+                    }
+
                     break;
 
                 case MessageType.ValueUpdate:
@@ -53,11 +61,6 @@ namespace Raft.NodeStrategy
         private void Vote(NodeMessage message)
         {
             Node.Vote(message.Term, message.SenderName, message.Id);
-        }
-
-        private void CommitLog(NodeMessage message)
-        {
-            Node.CommitLog(message);
         }
     }
 }
