@@ -26,21 +26,31 @@ namespace Raft.Test.Strategy.Timer
         }
         
         [Test]
-        public void ResetTimer_WhenMessageFromLeaderReceived()
+        public void ResetTimer_WhenMessageFromNewLeaderReceived()
         {
-            var nodeMessage = new NodeMessage(0, "ping", MessageType.Info, "Leader", Guid.Empty);
+            var nodeMessage = new NodeMessage(2, "ping", MessageType.Info, "Leader", Guid.Empty);
             var shouldReset = _candidateTimerStrategy.ShouldReset(nodeMessage);
             
             shouldReset.ShouldBeTrue();
         }
         
         [Test]
-        public void ResetTimer_WhenMessageFromAnotherCandidateReceived()
+        public void NotResetTimer_WhenMessageFromOldLeaderReceived()
         {
-            var nodeMessage = new NodeMessage(2, "new candidate", MessageType.VoteRequest, "anotherCandidate", Guid.Empty);
+            var nodeMessage = new NodeMessage(0, "ping", MessageType.Info, "Leader", Guid.Empty);
             var shouldReset = _candidateTimerStrategy.ShouldReset(nodeMessage);
             
-            shouldReset.ShouldBeTrue();
+            shouldReset.ShouldBeFalse();
+        }
+        
+        [TestCase(1)]
+        [TestCase(2)]
+        public void NotResetTimer_WhenMessageFromCandidateReceived(int term)
+        {
+            var nodeMessage = new NodeMessage(term, "new candidate", MessageType.VoteRequest, "anotherCandidate", Guid.Empty);
+            var shouldReset = _candidateTimerStrategy.ShouldReset(nodeMessage);
+            
+            shouldReset.ShouldBeFalse();
         }
         
         [Test]

@@ -34,12 +34,12 @@ namespace Raft.Test.Strategy.Timer
         }
         
         [Test]
-        public void ResetTimer_WhenMessageFromCandidateReceived()
+        public void NotResetTimer_WhenMessageFromCandidateReceived()
         {
             var nodeMessage = new NodeMessage(1, "from candidate", MessageType.VoteRequest, "candidate", Guid.Empty);
             var shouldReset = _followerTimerStrategy.ShouldReset(nodeMessage);
             
-            shouldReset.ShouldBeTrue();
+            shouldReset.ShouldBeFalse();
         }
         
         [Test]

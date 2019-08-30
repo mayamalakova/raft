@@ -34,9 +34,9 @@ namespace Raft.Test.Communication
         }
         
         [Test]
-        public void ResetTimer_WhenMessageFromLeaderReceived()
+        public void ResetTimer_WhenMessageFromNewLeaderReceived()
         {
-            _candidate.ReceiveMessage(new NodeMessage(1, "test", MessageType.Info, "someSender", Guid.Empty));
+            _candidate.ReceiveMessage(new NodeMessage(2, "test", MessageType.Info, "someSender", Guid.Empty));
             
             _timer.Received(1).Reset();
         }
