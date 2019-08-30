@@ -7,14 +7,13 @@ namespace Raft.NodeStrategy
     /// <summary>
     /// Follower node strategy for responding to Raft messages
     /// </summary>
-    public class FollowerStrategy: BaseStrategy, IMessageResponseStrategy
+    public class FollowerStrategy : BaseStrategy, IMessageResponseStrategy
     {
-
         public FollowerStrategy(Node node)
         {
             Node = node;
         }
-        
+
         public void RespondToMessage(NodeMessage message)
         {
             switch (message.Type)
@@ -40,16 +39,17 @@ namespace Raft.NodeStrategy
 
                 case MessageType.ValueUpdate:
                     break;
-                
+
                 case MessageType.Info:
                     break;
-                
+
                 case MessageType.VoteRequest:
                     if (!Node.HasVotedInTerm(message.Term))
                     {
                         Node.Status.Term = message.Term;
                         Vote(message);
                     }
+
                     break;
                 case MessageType.LeaderVote:
                     break;

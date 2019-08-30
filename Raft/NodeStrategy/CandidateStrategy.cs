@@ -12,7 +12,7 @@ namespace Raft.NodeStrategy
     public class CandidateStrategy : BaseStrategy, IMessageResponseStrategy
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        
+
         private readonly int _nodesCount;
         private readonly HashSet<string> _votes;
 
@@ -34,7 +34,7 @@ namespace Raft.NodeStrategy
                         BecomeFollower(message);
                         ConfirmLogUpdate(message);
                     }
-                    
+
                     break;
 
                 case MessageType.LogUpdateConfirmation:
@@ -51,7 +51,7 @@ namespace Raft.NodeStrategy
 
                 case MessageType.ValueUpdate:
                     break;
-                
+
                 case MessageType.Info:
                     if (message.Term > Node.Status.Term)
                     {
@@ -59,36 +59,36 @@ namespace Raft.NodeStrategy
                     }
 
                     break;
-                
+
                 case MessageType.VoteRequest:
                     if (message.Term > Node.Status.Term)
                     {
                         BecomeFollower(message);
                         Node.Vote(message.Term, message.SenderName, message.Id);
                     }
+
                     break;
-                
+
                 case MessageType.LeaderVote:
                     if (message.Value != Node.Name)
                     {
                         break;
                     }
-                    
+
                     AddVote(message);
                     if (HasMajority())
                     {
                         Logger.Debug($"{Node.Name} has majority {_votes.Count} / {_nodesCount}");
                         BecomeLeader();
-                        
                     }
+
                     break;
-                
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        
 
         private void AddVote(NodeMessage message)
         {

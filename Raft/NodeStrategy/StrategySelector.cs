@@ -11,7 +11,7 @@ namespace Raft.NodeStrategy
     public class StrategySelector
     {
         private readonly int _count;
-        
+
         public StrategySelector(int count)
         {
             _count = count;
@@ -21,13 +21,13 @@ namespace Raft.NodeStrategy
         {
             switch (node.Status.Name)
             {
-                    case NodeStatus.Follower:
-                        return new FollowerStrategy(node);
-                    case NodeStatus.Leader:
-                        return new LeaderStrategy(node, _count);
-                    case NodeStatus.Candidate:
-                        return new CandidateStrategy(node, _count);
-                    default: throw new ArgumentException("Unknown status");
+                case NodeStatus.Follower:
+                    return new FollowerStrategy(node);
+                case NodeStatus.Leader:
+                    return new LeaderStrategy(node, _count);
+                case NodeStatus.Candidate:
+                    return new CandidateStrategy(node, _count);
+                default: throw new ArgumentException("Unknown status");
             }
         }
 
