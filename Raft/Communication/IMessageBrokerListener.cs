@@ -10,5 +10,6 @@ namespace Raft.Communication
         void ReceiveMessage(NodeMessage message);
         
         string Name { get; }
+        void Timeout();
     }
 }

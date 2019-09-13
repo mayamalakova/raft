@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using NLog;
@@ -59,10 +60,24 @@ namespace Raft.Runner
                 {
                     ConnectNodes(command);
                 }
+                else if (command.StartsWith("timeout"))
+                {
+                    TimeoutNodes(command);
+                }
                 else
                 {
                     Console.WriteLine("Write ? and press Enter to see the options, or press Enter to exit");
                 }
+            }
+        }
+
+        private void TimeoutNodes(string command)
+        {
+            var nodes = GetNodesForCommand(command);
+            foreach (var node in nodes)
+            {
+                var runner = _nodeRunners.First(x => x.Name == node);
+                runner.Timeout();
             }
         }
 
@@ -76,16 +91,21 @@ namespace Raft.Runner
 
         private void ConnectNodes(string command)
         {
-            var entries = command.Split(' ');
-            var nodes = entries[1].Split(",").Select(x => x.Trim());
+            var nodes = GetNodesForCommand(command);
             Broker.Connect(nodes.ToList());
         }
 
         private void DisconnectNodes(string command)
         {
+            var nodes = GetNodesForCommand(command);
+            Broker.Disconnect(nodes.ToList());
+        }
+
+        private static IEnumerable<string> GetNodesForCommand(string command)
+        {
             var entries = command.Split(' ');
             var nodes = entries[1].Split(",").Select(x => x.Trim());
-            Broker.Disconnect(nodes.ToList());
+            return nodes;
         }
 
         private void UpdateValue(string command)

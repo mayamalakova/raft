@@ -39,10 +39,15 @@ namespace Raft.Communication
 
             if (ShouldResetTimer(message))
             {
-                _timer.Reset();
+                ResetTimer();
             }
 
             RespondToMessage(message);
+        }
+
+        private void ResetTimer()
+        {
+            _timer.Reset();
         }
 
         private bool ShouldResetTimer(NodeMessage message)
@@ -54,16 +59,21 @@ namespace Raft.Communication
         {
             _strategySelector.SelectResponseStrategy(Node).RespondToMessage(message);
         }
-        
+
         public void Start()
         {
             _timer.Start();
 
             _timer.Elapsed += (sender, args) =>
             {
-                _timer.Reset();
-                _strategySelector.SelectTimerStrategy(Node).OnTimerElapsed();
+                Timeout();
             };
+        }
+
+        public void Timeout()
+        {
+            _timer.Reset();
+            _strategySelector.SelectTimerStrategy(Node).OnTimerElapsed();
         }
     }
 }
