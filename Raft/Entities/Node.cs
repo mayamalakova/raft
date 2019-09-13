@@ -18,6 +18,7 @@ namespace Raft.Entities
         public string Value { get; private set; }
         
         public INodeStatus Status { get; set; }
+        public string DisplayLog => string.Join(" ", Log.Select(x => x.Type == OperationType.Commit ? x.Value : $"{x.Value}(?)").ToArray());
 
         public Node(string name, IMessageBroker messageBroker)
         {

@@ -20,7 +20,7 @@ namespace Raft.Communication
 
         public override string ToString()
         {
-            return $"{Name} ({Node.Status.Term}) {Node.Status} - {Node.Value}".Replace("  ", " ");
+            return $"{Name} ({Node.Status.Term}) {Node.Status} - {Node.DisplayLog}".Replace("  ", " ");
         }
 
         public NodeRunner(Node node, ITimer timer, StrategySelector strategySelector)
