@@ -10,6 +10,10 @@ namespace Raft.Test.Strategy.Timer
     [TestFixture]
     public class FollowerTimerStrategyShould
     {
+        private const int OlderTerm = 0;
+        private const int CurrentTerm = 1;
+        private const int NewerTerm = 2;
+
         private Node _follower;
         private FollowerTimerStrategy _followerTimerStrategy;
 
@@ -18,25 +22,26 @@ namespace Raft.Test.Strategy.Timer
         {
             _follower = new Node("Follower", Substitute.For<IMessageBroker>())
             {
-                Status = new FollowerStatus(0)
+                Status = new FollowerStatus(CurrentTerm)
             };
             _followerTimerStrategy = new FollowerTimerStrategy(node: _follower);
 
         }
         
-        [Test]
-        public void ResetTimer_WhenMessageFromLeaderReceived()
+        [TestCase(CurrentTerm, true)]
+        [TestCase(OlderTerm, false)]
+        public void ResetTimer_WhenMessageFromCurrentLeaderReceived(int term, bool expected)
         {
-            var nodeMessage = new NodeMessage(0, "ping", MessageType.Info, "Leader", Guid.Empty);
+            var nodeMessage = new NodeMessage(term, "ping", MessageType.Info, "Leader", Guid.Empty);
             var shouldReset = _followerTimerStrategy.ShouldReset(nodeMessage);
             
-            shouldReset.ShouldBeTrue();
+            shouldReset.ShouldBe(expected);
         }
         
         [Test]
         public void NotResetTimer_WhenMessageFromCandidateReceived()
         {
-            var nodeMessage = new NodeMessage(1, "from candidate", MessageType.VoteRequest, "candidate", Guid.Empty);
+            var nodeMessage = new NodeMessage(NewerTerm, "from candidate", MessageType.VoteRequest, "candidate", Guid.Empty);
             var shouldReset = _followerTimerStrategy.ShouldReset(nodeMessage);
             
             shouldReset.ShouldBeFalse();

@@ -19,7 +19,7 @@ namespace Raft.NodeStrategy.Timer
 
         public bool ShouldReset(NodeMessage message)
         {
-            return FromLeader(message);
+            return FromLeader(message) && message.Term >= _node.Status.Term;
         }
     }
 }
