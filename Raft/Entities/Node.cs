@@ -105,7 +105,10 @@ namespace Raft.Entities
 
             Logger.Debug($"{Name} becomes candidate, term: {newTerm}");
 
-            Status = new CandidateStatus(newTerm);
+            Status = new CandidateStatus(newTerm)
+            {
+                ConfirmedNodes = { Name }
+            };
             SendVoteRequest(newTerm);
         }
     }

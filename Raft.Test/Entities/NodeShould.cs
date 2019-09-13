@@ -43,5 +43,13 @@ namespace Raft.Test.Entities
             
             _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.VoteRequest));
         }
+
+        [Test]
+        public void VoteForItself_WhenBecomingCandidate()
+        {
+            _node.BecomeCandidate();
+            
+            ((CandidateStatus) _node.Status).ConfirmedNodes.ShouldContain(_node.Name);
+        }
     }
 }
