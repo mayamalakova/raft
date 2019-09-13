@@ -32,14 +32,20 @@ namespace Raft.Communication
             _listeners.Add(listener);
         }
 
-        public void Disconnect(string node)
+        public void Disconnect(IEnumerable<string> nodes)
         {
-            _disconnectedNodes.Add(node);
+            foreach (var node in nodes)
+            {
+                _disconnectedNodes.Add(node);
+            }
         }
 
-        public void Connect(string node)
+        public void Connect(IEnumerable<string> nodes)
         {
-            _disconnectedNodes.Remove(node);
+            foreach (var node in nodes)
+            {
+                _disconnectedNodes.Remove(node);
+            }
         }
 
         private void NotifyListeners(NodeMessage nodeMessage)
