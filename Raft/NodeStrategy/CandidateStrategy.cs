@@ -12,7 +12,7 @@ namespace Raft.NodeStrategy
     public class CandidateStrategy : BaseStrategy, IMessageResponseStrategy
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        
+
         private readonly int _nodesCount;
         private readonly HashSet<string> _votes;
 
@@ -29,53 +29,66 @@ namespace Raft.NodeStrategy
             switch (message.Type)
             {
                 case MessageType.LogUpdate:
-                    BecomeFollower(message);
-                    ConfirmLogUpdate(message);
+                    if (message.Term > Node.Status.Term)
+                    {
+                        BecomeFollower(message);
+                        ConfirmLogUpdate(message);
+                    }
+
                     break;
 
                 case MessageType.LogUpdateConfirmation:
                     break;
 
                 case MessageType.LogCommit:
-                    BecomeFollower(message);
+                    if (message.Term > Node.Status.Term)
+                    {
+                        BecomeFollower(message);
+                        CommitLog(message);
+                    }
+
                     break;
 
                 case MessageType.ValueUpdate:
                     break;
-                
+
                 case MessageType.Info:
-                    BecomeFollower(message);
+                    if (message.Term > Node.Status.Term)
+                    {
+                        BecomeFollower(message);
+                    }
+
                     break;
-                
+
                 case MessageType.VoteRequest:
                     if (message.Term > Node.Status.Term)
                     {
                         BecomeFollower(message);
                         Node.Vote(message.Term, message.SenderName, message.Id);
                     }
+
                     break;
-                
+
                 case MessageType.LeaderVote:
-                    if (message.Term > Node.Status.Term)
+                    if (message.Value != Node.Name)
                     {
-                        BecomeFollower(message);
                         break;
                     }
-                    
+
                     AddVote(message);
                     if (HasMajority())
                     {
                         Logger.Debug($"{Node.Name} has majority {_votes.Count} / {_nodesCount}");
                         BecomeLeader();
                     }
+
                     break;
-                
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        
 
         private void AddVote(NodeMessage message)
         {

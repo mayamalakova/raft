@@ -49,25 +49,6 @@ namespace Raft.Test.Communication
         }
 
         [Test]
-        public void CommitUpdate_WhenMajorityConfirmsLogUpdate()
-        {
-            var updateId = Guid.NewGuid();
-            _node.Log.Add(new LogEntry(OperationType.Update, TestValue, updateId));
-            
-            var messageA = new NodeMessage(0, TestValue, MessageType.LogUpdateConfirmation, "A", updateId);
-            var messageB = new NodeMessage(0, TestValue, MessageType.LogUpdateConfirmation, "B", updateId);
-            
-            _leaderNodeRunner.ReceiveMessage(messageA);
-            _node.Log.Last().Type.ShouldBe(OperationType.Update);
-            _messageBroker.DidNotReceiveWithAnyArgs().Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.LogCommit));
-            
-            _leaderNodeRunner.ReceiveMessage(messageB);
-            _node.Log.Last().Type.ShouldBe(OperationType.Commit);
-            _node.Value.ShouldBe(TestValue);
-            _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.LogCommit));
-        }
-        
-        [Test]
         public void DisplayStatus()
         {
             _leaderNodeRunner.ToString().ShouldBe($"{NodeName} (0) L - {_node.Value}");

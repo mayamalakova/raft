@@ -45,28 +45,65 @@ namespace Raft.Test.Strategy
 
             _node.Status.Name.ShouldBe(NodeStatus.Leader);
         }
+        
+        [Test]
+        public void SendPing_OnBecomingLeader()
+        {
+            var voteA = new NodeMessage(CandidateTerm, CandidateName, MessageType.LeaderVote, "A", Guid.Empty);
+            _candidateStrategy.RespondToMessage(voteA);
+            var voteB = new NodeMessage(CandidateTerm, CandidateName, MessageType.LeaderVote, "B", Guid.Empty);
+            _candidateStrategy.RespondToMessage(voteB);
+
+            _node.Status.Name.ShouldBe(NodeStatus.Leader);
+            _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.Info && m.SenderName == CandidateName));
+        }
 
         [TestCase(MessageType.LogUpdate)]
         [TestCase(MessageType.LogCommit)]
         [TestCase(MessageType.Info)]
-        public void BecomeFollower_OnAnotherLeaderFound(MessageType messageType)
+        public void IgnoreOldLeaderMessages(MessageType messageType)
         {
             var fromLeader = new NodeMessage(0, CandidateName, messageType, "L", Guid.Empty);
+            _candidateStrategy.RespondToMessage(fromLeader);
+            
+            _node.Status.Name.ShouldBe(NodeStatus.Candidate);
+        }
+        
+        [TestCase(MessageType.LogUpdate)]
+        [TestCase(MessageType.LogCommit)]
+        [TestCase(MessageType.Info)]
+        public void BecomeFollower_OnNewTermLeaderFound(MessageType messageType)
+        {
+            var fromLeader = new NodeMessage(2, CandidateName, messageType, "L", Guid.Empty);
             _candidateStrategy.RespondToMessage(fromLeader);
             
             _node.Status.Name.ShouldBe(NodeStatus.Follower);
         }
 
         [Test]
-        public void BecomeFollowerAndUpdateLog_OnLogUpdate()
+        public void BecomeFollowerAndUpdateLog_OnLogUpdateFromNewLeader()
         {
-            var fromLeader = new NodeMessage(0, "new value", MessageType.LogUpdate, "L", Guid.Empty);
+            var fromLeader = new NodeMessage(2, "new value", MessageType.LogUpdate, "L", Guid.Empty);
             _candidateStrategy.RespondToMessage(fromLeader);
             
             _node.Status.Name.ShouldBe(NodeStatus.Follower);
             _node.Log.Count.ShouldBe(1);
             _node.LastLogEntry().Value.ShouldBe("new value");
             _node.LastLogEntry().Type.ShouldBe(OperationType.Update);
+        }
+        
+        [Test]
+        public void BecomeFollowerAndCommitLog_OnLogCommitFromNewLeader()
+        {
+            var entryId = Guid.Empty;
+            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId));
+            var fromLeader = new NodeMessage(2, "new value", MessageType.LogCommit, "L", entryId);
+            _candidateStrategy.RespondToMessage(fromLeader);
+            
+            _node.Status.Name.ShouldBe(NodeStatus.Follower);
+            _node.Log.Count.ShouldBe(1);
+            _node.LastLogEntry().Value.ShouldBe("new value");
+            _node.LastLogEntry().Type.ShouldBe(OperationType.Commit);
         }
         
         [Test]

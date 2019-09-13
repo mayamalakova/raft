@@ -53,6 +53,18 @@ namespace Raft.Test.Strategy
             _node.LastLogEntry().Value.ShouldBe("test");
             _node.LastLogEntry().Type.ShouldBe(OperationType.Commit);
         }
+                
+        [TestCase(MessageType.LogUpdate)]
+        [TestCase(MessageType.LogCommit)]
+        public void RejectLogReplicationMessagesFromOlderTerms(MessageType messageType)
+        {
+            _node.Status = new FollowerStatus(2);
+            var logUpdate = new NodeMessage(1, "test", messageType, "L", Guid.Empty);
+            _followerStrategy.RespondToMessage(logUpdate);
+
+            _node.Log.ShouldBeEmpty();
+            _messageBroker.Received(0).Broadcast(Arg.Any<NodeMessage>());
+        }
 
         [Test]
         public void IgnoreLogCommits_ForIrrelevantEntries()
@@ -85,6 +97,8 @@ namespace Raft.Test.Strategy
             
             _messageBroker.Received(0).Broadcast(Arg.Any<NodeMessage>());
         }
+
+        
         
     }
 }

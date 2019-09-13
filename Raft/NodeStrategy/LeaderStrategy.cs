@@ -7,7 +7,7 @@ namespace Raft.NodeStrategy
     /// <summary>
     /// Leader node strategy for responding to Raft messages
     /// </summary>
-    public class LeaderStrategy: BaseStrategy, IMessageResponseStrategy
+    public class LeaderStrategy : BaseStrategy, IMessageResponseStrategy
     {
         private readonly LeaderStatus _status;
 
@@ -19,7 +19,7 @@ namespace Raft.NodeStrategy
             Node = node;
             _status = node.Status as LeaderStatus;
         }
-        
+
         public void RespondToMessage(NodeMessage message)
         {
             switch (message.Type)
@@ -42,15 +42,21 @@ namespace Raft.NodeStrategy
                     break;
 
                 case MessageType.LogUpdate:
-                    BecomeFollowerIfSentFromNewerLeader(message);
+                    BecomeFollowerIfSentFromNewerTerm(message);
                     break;
                 case MessageType.LogCommit:
-                    BecomeFollowerIfSentFromNewerLeader(message);
+                    BecomeFollowerIfSentFromNewerTerm(message);
                     break;
                 case MessageType.Info:
-                    BecomeFollowerIfSentFromNewerLeader(message);
+                    BecomeFollowerIfSentFromNewerTerm(message);
                     break;
                 case MessageType.VoteRequest:
+                    if (FromHigherTerm(message))
+                    {
+                        BecomeFollower(message);
+                        Node.Vote(message.Term, message.SenderName, message.Id);
+                    }
+
                     break;
                 case MessageType.LeaderVote:
                     break;
@@ -59,15 +65,15 @@ namespace Raft.NodeStrategy
             }
         }
 
-        private void BecomeFollowerIfSentFromNewerLeader(NodeMessage message)
+        private void BecomeFollowerIfSentFromNewerTerm(NodeMessage message)
         {
-            if (FromLeaderWithHigherTerm(message))
+            if (FromHigherTerm(message))
             {
                 BecomeFollower(message);
             }
         }
 
-        private bool FromLeaderWithHigherTerm(NodeMessage message)
+        private bool FromHigherTerm(NodeMessage message)
         {
             return message.Term >= Node.Status.Term;
         }
@@ -75,6 +81,7 @@ namespace Raft.NodeStrategy
         private void ResetUpdateConfirmations()
         {
             _status.ConfirmedNodes.Clear();
+            _status.ConfirmedNodes.Add(Node.Name);
         }
 
         private void RequestLogUpdate(NodeMessage message)

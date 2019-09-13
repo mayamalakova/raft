@@ -4,14 +4,14 @@ namespace Raft.Entities
 {
     public class NodeMessage
     {
-        public string Value { get; private set; }
-        public MessageType Type { get; private set; }
+        public string Value { get; }
+        public MessageType Type { get; }
 
-        public string SenderName { get; private set; }
+        public string SenderName { get; }
 
-        public int Term { get; set; }
+        public int Term { get; }
 
-        public Guid Id { get; private set; }
+        public Guid Id { get; }
         
         public NodeMessage(int term, string value, MessageType type, string senderName, Guid id)
         {

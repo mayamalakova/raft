@@ -1,4 +1,3 @@
-using System;
 using NLog;
 using Raft.Entities;
 using Raft.NodeStrategy;

@@ -3,7 +3,7 @@ using Raft.Entities;
 
 namespace Raft.NodeStrategy.Timer
 {
-    public class CandidateTimerStrategy : BaseTimerStrategy, ITimerStrategy 
+    public class CandidateTimerStrategy : BaseTimerStrategy, ITimerStrategy
     {
         private readonly Node _node;
 
@@ -19,7 +19,7 @@ namespace Raft.NodeStrategy.Timer
 
         public bool ShouldReset(NodeMessage message)
         {
-            return FromLeader(message) || FromCandidate(message);
+            return FromLeader(message) && message.Term > _node.Status.Term;
         }
     }
 }
