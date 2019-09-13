@@ -81,6 +81,7 @@ namespace Raft.NodeStrategy
         private void ResetUpdateConfirmations()
         {
             _status.ConfirmedNodes.Clear();
+            _status.ConfirmedNodes.Add(Node.Name);
         }
 
         private void RequestLogUpdate(NodeMessage message)

@@ -48,6 +48,21 @@ namespace Raft.Test.Strategy
         }
 
         [Test]
+        public void NotCommitLogOrUpdateValue_BeforeMajorityConfirmed()
+        {
+            var entryId = Guid.NewGuid();
+            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId));
+            
+            var confirmationA = new NodeMessage(1, "new value", MessageType.LogUpdateConfirmation, "A", entryId);
+            _leaderStrategy.RespondToMessage(confirmationA);
+
+            _node.LastLogEntry().Type.ShouldBe(OperationType.Update);
+            _node.Value.ShouldBe(null);
+            _messageBroker.Received(0).Broadcast(
+                Arg.Is<NodeMessage>(m => m.Type == MessageType.LogCommit && m.SenderName == "L"));
+        }
+        
+        [Test]
         public void CommitLogAndUpdateValue_OnMajorityConfirmed()
         {
             var entryId = Guid.NewGuid();
@@ -59,22 +74,23 @@ namespace Raft.Test.Strategy
             _leaderStrategy.RespondToMessage(confirmationB);
 
             _node.LastLogEntry().Type.ShouldBe(OperationType.Commit);
-            _node.LastLogEntry().Value.ShouldBe("new value");
             _node.Value.ShouldBe("new value");
             _messageBroker.Received(1).Broadcast(
                 Arg.Is<NodeMessage>(m => m.Type == MessageType.LogCommit && m.SenderName == "L"));
         }
 
         [Test]
-        public void ResetConfirmations_OnNewValueUpdate()
+        public void ResetConfirmationsAndConfirmNewValue_OnNewValueUpdate()
         {
             var leaderStatus = _node.Status as LeaderStatus;
             leaderStatus?.ConfirmedNodes.Add("A");
+            leaderStatus?.ConfirmedNodes.Add("L");
             
             var valueUpdate = new NodeMessage(1, "new value", MessageType.ValueUpdate, null, Guid.Empty);
             _leaderStrategy.RespondToMessage(valueUpdate);
             
-            leaderStatus?.ConfirmedNodes.ShouldBeEmpty();
+            leaderStatus?.ConfirmedNodes.Count.ShouldBe(1);
+            leaderStatus?.ConfirmedNodes.ShouldContain("L");
         }
 
         [TestCase(MessageType.LogUpdate)]
