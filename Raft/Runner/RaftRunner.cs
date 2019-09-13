@@ -53,11 +53,11 @@ namespace Raft.Runner
                 }
                 else if (command.StartsWith("disconnect"))
                 {
-                    DisconnectNode(command);
+                    DisconnectNodes(command);
                 }
                 else if (command.StartsWith("connect"))
                 {
-                    ConnectNode(command);
+                    ConnectNodes(command);
                 }
                 else
                 {
@@ -74,16 +74,18 @@ namespace Raft.Runner
             }
         }
 
-        private void ConnectNode(string command)
+        private void ConnectNodes(string command)
         {
             var entries = command.Split(' ');
-            Broker.Connect(entries[1]);
+            var nodes = entries[1].Split(",").Select(x => x.Trim());
+            Broker.Connect(nodes.ToList());
         }
 
-        private void DisconnectNode(string command)
+        private void DisconnectNodes(string command)
         {
             var entries = command.Split(' ');
-            Broker.Disconnect(entries[1]);
+            var nodes = entries[1].Split(",").Select(x => x.Trim());
+            Broker.Disconnect(nodes.ToList());
         }
 
         private void UpdateValue(string command)
@@ -98,8 +100,8 @@ namespace Raft.Runner
             Console.WriteLine("You can use the following commands: ");
             Console.WriteLine("status - to see the current node values ");
             Console.WriteLine("value - to enter new value ");
-            Console.WriteLine("disconnect - to disconnect a node");
-            Console.WriteLine("connect - to reconnect a node");
+            Console.WriteLine("disconnect - to disconnect one or more nodes");
+            Console.WriteLine("connect - to reconnect one or more nodes");
         }
 
         private void ConfigureLogging()

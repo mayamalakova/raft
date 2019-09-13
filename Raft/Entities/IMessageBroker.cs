@@ -13,8 +13,8 @@ namespace Raft.Entities
         
         void Register(IMessageBrokerListener listener);
         
-        void Disconnect(string node);
-        void Connect(string node);
+        void Disconnect(IEnumerable<string> nodes);
+        void Connect(IEnumerable<string> nodes);
 
         IEnumerable<IMessageBrokerListener> Listeners { get; }
     }
