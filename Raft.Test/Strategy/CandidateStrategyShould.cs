@@ -117,7 +117,7 @@ namespace Raft.Test.Strategy
         }
 
         [Test]
-        public void BecomeFollower_OnNewerTermStarted()
+        public void BecomeFollowerAndVot_OnNewerTermStarted()
         {
             var voteRequest = new NodeMessage(CandidateTerm + 1, CandidateName, MessageType.VoteRequest, "C", Guid.Empty);
             _candidateStrategy.RespondToMessage(voteRequest);
@@ -126,6 +126,18 @@ namespace Raft.Test.Strategy
             
             _messageBroker.Received(1)
                 .Broadcast(message: Arg.Is<NodeMessage>(m => m.Type == MessageType.LeaderVote && m.SenderName == CandidateName));
+        }
+
+        [Test]
+        public void IgnoreStaleMessages()
+        {
+            var voteRequest = new NodeMessage(CandidateTerm - 1, CandidateName, MessageType.VoteRequest, "C", Guid.Empty);
+            _candidateStrategy.RespondToMessage(voteRequest);
+            
+            _node.Status.Name.ShouldBe(NodeStatus.Candidate);
+            
+            _messageBroker.DidNotReceiveWithAnyArgs()
+                .Broadcast(message: Arg.Any<NodeMessage>());
         }
 
     }

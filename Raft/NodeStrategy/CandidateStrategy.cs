@@ -32,6 +32,11 @@ namespace Raft.NodeStrategy
                 new FollowerStrategy(Node).RespondToMessage(message);
                 return;
             }
+
+            if (message.Term < Node.Status.Term)
+            {
+                return;
+            }
             
             switch (message.Type)
             {
