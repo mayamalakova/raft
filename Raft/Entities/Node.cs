@@ -83,7 +83,7 @@ namespace Raft.Entities
 
         public bool HasVotedInTerm(int term)
         {
-            return Status.Term >= term;
+            return Status.LastVote >= term;
         }
 
         public void SendPing()

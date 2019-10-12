@@ -47,6 +47,7 @@ namespace Raft.NodeStrategy
                     if (!Node.HasVotedInTerm(message.Term))
                     {
                         Node.Status.Term = message.Term;
+                        Node.Status.LastVote = message.Term;
                         Vote(message);
                     }
 
