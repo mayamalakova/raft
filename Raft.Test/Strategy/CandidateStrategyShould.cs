@@ -96,7 +96,7 @@ namespace Raft.Test.Strategy
         public void BecomeFollowerAndCommitLog_OnLogCommitFromNewLeader()
         {
             var entryId = Guid.Empty;
-            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId));
+            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId, 2));
             var fromLeader = new NodeMessage(2, "new value", MessageType.LogCommit, "L", entryId);
             _candidateStrategy.RespondToMessage(fromLeader);
             

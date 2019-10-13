@@ -38,7 +38,7 @@ namespace Raft.Test.Strategy
         public void AddConfirmations_OnLogUpdateConfirmationReceived()
         {
             var entryId = Guid.NewGuid();
-            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId));
+            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId, 1));
             var updateConfirmation = new NodeMessage(1, "new value", MessageType.LogUpdateConfirmation, "A", entryId);
             
             _leaderStrategy.RespondToMessage(updateConfirmation);
@@ -51,7 +51,7 @@ namespace Raft.Test.Strategy
         public void NotCommitLogOrUpdateValue_BeforeMajorityConfirmed()
         {
             var entryId = Guid.NewGuid();
-            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId));
+            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId, 1));
             
             var confirmationA = new NodeMessage(1, "new value", MessageType.LogUpdateConfirmation, "A", entryId);
             _leaderStrategy.RespondToMessage(confirmationA);
@@ -66,7 +66,7 @@ namespace Raft.Test.Strategy
         public void CommitLogAndUpdateValue_OnMajorityConfirmed()
         {
             var entryId = Guid.NewGuid();
-            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId));
+            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId, 1));
             
             var confirmationA = new NodeMessage(1, "new value", MessageType.LogUpdateConfirmation, "A", entryId);
             _leaderStrategy.RespondToMessage(confirmationA);

@@ -1,4 +1,5 @@
 using System;
+using NLog;
 using Raft.Communication;
 using Raft.Entities;
 
@@ -9,6 +10,8 @@ namespace Raft.NodeStrategy
     /// </summary>
     public class FollowerStrategy : BaseStrategy, IMessageResponseStrategy
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        
         public FollowerStrategy(Node node)
         {
             Node = node;
@@ -44,7 +47,7 @@ namespace Raft.NodeStrategy
                     break;
 
                 case MessageType.VoteRequest:
-                    if (!Node.HasVotedInTerm(message.Term))
+                    if (!Node.HasVotedInTerm(message.Term) && CandidateIsUpToDate(message))
                     {
                         Node.Status.Term = message.Term;
                         Node.Status.LastVote = message.Term;
@@ -57,6 +60,30 @@ namespace Raft.NodeStrategy
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private bool CandidateIsUpToDate(NodeMessage message)
+        {
+            if (Node.LastLogEntry() == null)
+            {
+                
+                return true;
+            }
+            
+            var (term, index) = ParseLastLogEntryInfo(message);
+            if (term < Node.LastLogEntry().Term || term == Node.LastLogEntry().Term && index < Node.Log.Count - 1)
+            {
+                Logger.Debug($"{Node.Name} denyies vote {message.Value} to {message.SenderName}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static (int term, int index) ParseLastLogEntryInfo(NodeMessage message)
+        {
+            var lastLogEntryInfo = message.Value.Split(",");
+            return (int.Parse(lastLogEntryInfo[0]), int.Parse(lastLogEntryInfo[1]));
         }
 
         private void Vote(NodeMessage message)
