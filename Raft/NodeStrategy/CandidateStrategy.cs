@@ -26,49 +26,20 @@ namespace Raft.NodeStrategy
 
         public void RespondToMessage(NodeMessage message)
         {
+            if (message.Term > Node.Status.Term)
+            {
+                BecomeFollower(message);
+                new FollowerStrategy(Node).RespondToMessage(message);
+                return;
+            }
+
+            if (message.Term < Node.Status.Term)
+            {
+                return;
+            }
+            
             switch (message.Type)
             {
-                case MessageType.LogUpdate:
-                    if (message.Term > Node.Status.Term)
-                    {
-                        BecomeFollower(message);
-                        ConfirmLogUpdate(message);
-                    }
-
-                    break;
-
-                case MessageType.LogUpdateConfirmation:
-                    break;
-
-                case MessageType.LogCommit:
-                    if (message.Term > Node.Status.Term)
-                    {
-                        BecomeFollower(message);
-                        CommitLog(message);
-                    }
-
-                    break;
-
-                case MessageType.ValueUpdate:
-                    break;
-
-                case MessageType.Info:
-                    if (message.Term > Node.Status.Term)
-                    {
-                        BecomeFollower(message);
-                    }
-
-                    break;
-
-                case MessageType.VoteRequest:
-                    if (message.Term > Node.Status.Term)
-                    {
-                        BecomeFollower(message);
-                        Node.Vote(message.Term, message.SenderName, message.Id);
-                    }
-
-                    break;
-
                 case MessageType.LeaderVote:
                     if (message.Value != Node.Name)
                     {
@@ -83,7 +54,18 @@ namespace Raft.NodeStrategy
                     }
 
                     break;
-
+                case MessageType.ValueUpdate:
+                    break;
+                case MessageType.LogUpdate:
+                    break;
+                case MessageType.LogUpdateConfirmation:
+                    break;
+                case MessageType.LogCommit:
+                    break;
+                case MessageType.Info:
+                    break;
+                case MessageType.VoteRequest:
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

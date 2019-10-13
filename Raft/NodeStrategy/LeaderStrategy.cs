@@ -22,6 +22,18 @@ namespace Raft.NodeStrategy
 
         public void RespondToMessage(NodeMessage message)
         {
+            if (message.Term > Node.Status.Term)
+            {
+                BecomeFollower(message);
+                new FollowerStrategy(Node).RespondToMessage(message);
+                return;
+            }
+
+            if (message.Type != MessageType.ValueUpdate && message.Term < _status.Term)
+            {
+                return;
+            }
+            
             switch (message.Type)
             {
                 case MessageType.ValueUpdate:
@@ -42,40 +54,18 @@ namespace Raft.NodeStrategy
                     break;
 
                 case MessageType.LogUpdate:
-                    BecomeFollowerIfSentFromNewerTerm(message);
                     break;
                 case MessageType.LogCommit:
-                    BecomeFollowerIfSentFromNewerTerm(message);
                     break;
                 case MessageType.Info:
-                    BecomeFollowerIfSentFromNewerTerm(message);
                     break;
                 case MessageType.VoteRequest:
-                    if (FromHigherTerm(message))
-                    {
-                        BecomeFollower(message);
-                        Node.Vote(message.Term, message.SenderName, message.Id);
-                    }
-
                     break;
                 case MessageType.LeaderVote:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
-
-        private void BecomeFollowerIfSentFromNewerTerm(NodeMessage message)
-        {
-            if (FromHigherTerm(message))
-            {
-                BecomeFollower(message);
-            }
-        }
-
-        private bool FromHigherTerm(NodeMessage message)
-        {
-            return message.Term >= Node.Status.Term;
         }
 
         private void ResetUpdateConfirmations()

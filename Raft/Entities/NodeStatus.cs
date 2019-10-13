@@ -22,6 +22,7 @@ namespace Raft.Entities
         public string Name => NodeStatus.Leader;
         
         public int Term { get; set; }
+        public int LastVote { get; set; }
         public override string ToString() => "L";
     }
     
@@ -35,6 +36,7 @@ namespace Raft.Entities
         public string Name => NodeStatus.Follower;
         
         public int Term { get; set; }
+        public int LastVote { get; set; }
         public override string ToString() => "F";
     }
     
@@ -50,6 +52,7 @@ namespace Raft.Entities
         public string Name => NodeStatus.Candidate;
         
         public int Term { get; set; }
+        public int LastVote { get; set; }
         public override string ToString() => "C";
     }
 }

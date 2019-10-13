@@ -38,7 +38,7 @@ namespace Raft.Test.Strategy
         public void AddConfirmations_OnLogUpdateConfirmationReceived()
         {
             var entryId = Guid.NewGuid();
-            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId));
+            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId, 1));
             var updateConfirmation = new NodeMessage(1, "new value", MessageType.LogUpdateConfirmation, "A", entryId);
             
             _leaderStrategy.RespondToMessage(updateConfirmation);
@@ -51,7 +51,7 @@ namespace Raft.Test.Strategy
         public void NotCommitLogOrUpdateValue_BeforeMajorityConfirmed()
         {
             var entryId = Guid.NewGuid();
-            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId));
+            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId, 1));
             
             var confirmationA = new NodeMessage(1, "new value", MessageType.LogUpdateConfirmation, "A", entryId);
             _leaderStrategy.RespondToMessage(confirmationA);
@@ -66,7 +66,7 @@ namespace Raft.Test.Strategy
         public void CommitLogAndUpdateValue_OnMajorityConfirmed()
         {
             var entryId = Guid.NewGuid();
-            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId));
+            _node.Log.Add(new LogEntry(OperationType.Update, "new value", entryId, 1));
             
             var confirmationA = new NodeMessage(1, "new value", MessageType.LogUpdateConfirmation, "A", entryId);
             _leaderStrategy.RespondToMessage(confirmationA);
@@ -116,16 +116,26 @@ namespace Raft.Test.Strategy
             
         }
         
-        [Test]
-        public void IgnoreOldTermElections()
+        [TestCase(MessageType.VoteRequest)]
+        [TestCase(MessageType.LogUpdateConfirmation)]
+        [TestCase(MessageType.LeaderVote)]
+        public void IgnoreStaleServerMessages(MessageType messageType)
         {
-            var fromCandidate = new NodeMessage(0, "L1", MessageType.VoteRequest, "C1", Guid.Empty);
+            var fromCandidate = new NodeMessage(0, "L1", messageType, "C1", Guid.Empty);
             _leaderStrategy.RespondToMessage(fromCandidate);
             
             _node.Status.Name.ShouldBe(NodeStatus.Leader);
-            _messageBroker.Received(0).Broadcast(
-                Arg.Is<NodeMessage>(m => m.Type == MessageType.LeaderVote && m.SenderName == "L"));
+            _messageBroker.DidNotReceiveWithAnyArgs().Broadcast(Arg.Any<NodeMessage>());
+        }
+
+        [Test]
+        public void NotIgnoreClientMessages()
+        {
+            var fromCandidate = new NodeMessage(0, "L1", MessageType.ValueUpdate, "C1", Guid.Empty);
+            _leaderStrategy.RespondToMessage(fromCandidate);
             
+            _node.Status.Name.ShouldBe(NodeStatus.Leader);
+            _messageBroker.Received(1).Broadcast(Arg.Any<NodeMessage>());
         }
 
     }

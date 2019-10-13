@@ -44,7 +44,7 @@ namespace Raft.Test.Communication
         public void Commit_OnLogCommit()
         {
             var updateId = Guid.NewGuid();
-            _node.Log.Add(new LogEntry(OperationType.Update, TestValue, updateId));
+            _node.Log.Add(new LogEntry(OperationType.Update, TestValue, updateId, 0));
             
             var message = new NodeMessage(0, TestValue, MessageType.LogCommit, null, updateId);
             _nodeRunner.ReceiveMessage(message);

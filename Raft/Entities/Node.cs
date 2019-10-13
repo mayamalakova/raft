@@ -28,7 +28,7 @@ namespace Raft.Entities
 
         public void UpdateLog(NodeMessage message, Guid entryId)
         {
-            var logEntry = new LogEntry(OperationType.Update, message.Value, entryId);
+            var logEntry = new LogEntry(OperationType.Update, message.Value, entryId, Status.Term);
             Log.Add(logEntry);
         }
 
@@ -69,7 +69,9 @@ namespace Raft.Entities
 
         private void SendVoteRequest(int term)
         {
-            var message = new NodeMessage(term, Name, MessageType.VoteRequest, Name, Guid.NewGuid());
+            var lastLogEntry = LastLogEntry();
+            var value = lastLogEntry == null ? "0,-1" : $"{lastLogEntry.Term},{Log.Count - 1}"; 
+            var message = new NodeMessage(term, value, MessageType.VoteRequest, Name, Guid.NewGuid());
             Broker.Broadcast(message);
         }
 
@@ -83,7 +85,7 @@ namespace Raft.Entities
 
         public bool HasVotedInTerm(int term)
         {
-            return Status.Term >= term;
+            return Status.LastVote >= term;
         }
 
         public void SendPing()

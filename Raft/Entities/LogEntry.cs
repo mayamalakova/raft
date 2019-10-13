@@ -9,11 +9,14 @@ namespace Raft.Entities
         public string Value { get; }
         public Guid Id { get; }
 
-        public LogEntry(OperationType type, string value, Guid id)
+        public int Term { get; }
+
+        public LogEntry(OperationType type, string value, Guid id, int term)
         {
             Type = type;
             Value = value;
             Id = id;
+            Term = term;
         }
 
     }
