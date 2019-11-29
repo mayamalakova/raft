@@ -34,5 +34,23 @@ namespace Raft.NodeStrategy
         {
             Node.CommitLog(message);
         }
+
+        protected bool CandidateIsUpToDate(NodeMessage message)
+        {
+            if (Node.LastLogEntry() == null)
+            {
+                
+                return true;
+            }
+            
+            var (term, index) = ParseLastLogEntryInfo(message);
+            return term >= Node.LastLogEntry().Term && (term != Node.LastLogEntry().Term || index >= Node.Log.Count - 1);
+        }
+
+        private static (int term, int index) ParseLastLogEntryInfo(NodeMessage message)
+        {
+            var lastLogEntryInfo = message.Value.Split(",");
+            return (int.Parse(lastLogEntryInfo[0]), int.Parse(lastLogEntryInfo[1]));
+        }
     }
 }
