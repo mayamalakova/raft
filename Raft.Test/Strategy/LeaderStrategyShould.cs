@@ -116,6 +116,21 @@ namespace Raft.Test.Strategy
                 Arg.Is<NodeMessage>(m => m.Type == MessageType.LeaderVote && m.SenderName == "L"),
                 Arg.Is<string>(x => x.Equals(newCandidateName)));
         }
+        
+        [TestCase(0, 2, false)]
+        [TestCase(2, -1, false)]
+        [TestCase(2, 1, true)]
+        public void NotBecomeFollower_OnNewTermElectionStartedFromCandidateWithOldLog(int term, int lastLogIndex, bool expectation)
+        {
+            _node.Log.Add(new LogEntry(OperationType.Update, "some value", Guid.NewGuid(), 2));
+            
+            const string newCandidateName = "C1";
+            var fromCandidate = new NodeMessage(2, $"{term},{lastLogIndex}", MessageType.VoteRequest, newCandidateName, Guid.Empty);
+            
+            _leaderStrategy.RespondToMessage(fromCandidate);
+
+            _node.Status.Name.ShouldBe(expectation ? NodeStatus.Follower : NodeStatus.Leader);
+        }
 
         [TestCase(MessageType.VoteRequest)]
         [TestCase(MessageType.LogUpdateConfirmation)]

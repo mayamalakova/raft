@@ -37,9 +37,8 @@ namespace Raft.NodeStrategy
 
         protected bool CandidateIsUpToDate(NodeMessage message)
         {
-            if (Node.LastLogEntry() == null)
+            if (message.Type != MessageType.VoteRequest || Node.LastLogEntry() == null)
             {
-                
                 return true;
             }
             

@@ -22,7 +22,7 @@ namespace Raft.NodeStrategy
 
         public void RespondToMessage(NodeMessage message)
         {
-            if (message.Term > Node.Status.Term)
+            if (message.Term > Node.Status.Term && CandidateIsUpToDate(message))
             {
                 BecomeFollower(message);
                 new FollowerStrategy(Node).RespondToMessage(message);
