@@ -122,6 +122,7 @@ namespace Raft.Runner
             Console.WriteLine("value - to enter new value ");
             Console.WriteLine("disconnect - to disconnect one or more nodes");
             Console.WriteLine("connect - to reconnect one or more nodes");
+            Console.WriteLine("timeout - to trigger and make one or more nodes candidates");
         }
 
         private void ConfigureLogging()
