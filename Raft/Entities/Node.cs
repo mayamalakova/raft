@@ -49,10 +49,10 @@ namespace Raft.Entities
             return Log.Count > 0 ? Log.Last() : null;
         }
 
-        internal void ConfirmLogUpdate(Guid entryId)
+        internal void ConfirmLogUpdate(Guid entryId, string leaderName)
         {
             var nodeMessage = new NodeMessage(Status.Term, null, MessageType.LogUpdateConfirmation, Name, entryId);
-            Broker.Broadcast(nodeMessage);
+            Broker.Send(nodeMessage, leaderName);
         }
 
         internal void SendCommit(NodeMessage message)
@@ -80,7 +80,7 @@ namespace Raft.Entities
             Logger.Debug($"{Name} votes for {candidate}");
             
             var voteMessage = new NodeMessage(term, candidate, MessageType.LeaderVote, Name, electionId);
-            Broker.Broadcast(voteMessage);
+            Broker.Send(voteMessage, candidate);
         }
 
         public bool HasVotedInTerm(int term)

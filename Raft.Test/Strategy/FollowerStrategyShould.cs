@@ -31,15 +31,16 @@ namespace Raft.Test.Strategy
         [Test]
         public void UpdateLogAndConfirm_OnLogUpdate()
         {
-            var logUpdate = new NodeMessage(FollowerTerm, "test", MessageType.LogUpdate, "L", Guid.Empty);
+            const string leaderName = "L";
+            var logUpdate = new NodeMessage(FollowerTerm, "test", MessageType.LogUpdate, leaderName, Guid.Empty);
             _followerStrategy.RespondToMessage(logUpdate);
 
             _node.LastLogEntry().Value.ShouldBe("test");
             _node.LastLogEntry().Type.ShouldBe(OperationType.Update);
             
-            _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(
+            _messageBroker.Received(1).Send(Arg.Is<NodeMessage>(
                 m => m.Type == MessageType.LogUpdateConfirmation &&
-                     m.SenderName == FollowerName));
+                     m.SenderName == FollowerName), Arg.Is<string>(x => x.Equals(leaderName)));
         }
 
         [Test]
@@ -83,11 +84,12 @@ namespace Raft.Test.Strategy
         [Test]
         public void VoteForLeader_WhenNotVotedInTerm()
         {
-            var voteRequest = new NodeMessage(1, "0,-1", MessageType.VoteRequest, "C", Guid.NewGuid());
+            var leaderName = "leader";
+            var voteRequest = new NodeMessage(1, "0,-1", MessageType.VoteRequest, leaderName, Guid.NewGuid());
             _followerStrategy.RespondToMessage(voteRequest);
             
-            _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(
-                m => m.Type == MessageType.LeaderVote && m.SenderName == FollowerName));
+            _messageBroker.Received(1).Send(Arg.Is<NodeMessage>(
+                m => m.Type == MessageType.LeaderVote && m.SenderName == FollowerName), Arg.Is<string>(x => x.Equals(leaderName)));
         }
         
         [Test]
@@ -106,11 +108,12 @@ namespace Raft.Test.Strategy
         {
             _node.Status = new FollowerStatus(1);
             _node.Log.Add(new LogEntry(OperationType.Update, "value", Guid.NewGuid(), 2));
-            
-            var voteRequest = new NodeMessage(FollowerTerm + 1, $"{term},{lastLogIndex}", MessageType.VoteRequest, "C", Guid.NewGuid());
+
+            var leaderName = "leader";
+            var voteRequest = new NodeMessage(FollowerTerm + 1, $"{term},{lastLogIndex}", MessageType.VoteRequest, leaderName, Guid.NewGuid());
             _followerStrategy.RespondToMessage(voteRequest);
             
-            _messageBroker.Received(expectation ? 1 : 0).Broadcast(Arg.Any<NodeMessage>());
+            _messageBroker.Received(expectation ? 1 : 0).Send(Arg.Any<NodeMessage>(), Arg.Is<string>(x => x.Equals(leaderName)));
         }
         
     }

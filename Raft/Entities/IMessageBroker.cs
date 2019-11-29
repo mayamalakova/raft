@@ -10,6 +10,8 @@ namespace Raft.Entities
     {
         void Broadcast(NodeMessage message);
         void Broadcast(string newValue);
+
+        void Send(NodeMessage nodeMessage, string recipient);
         
         void Register(IMessageBrokerListener listener);
         

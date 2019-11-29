@@ -27,7 +27,7 @@ namespace Raft.NodeStrategy
         protected void ConfirmLogUpdate(NodeMessage message)
         {
             Node.UpdateLog(message, message.Id);
-            Node.ConfirmLogUpdate(message.Id);
+            Node.ConfirmLogUpdate(message.Id, message.SenderName);
         }
 
         protected void CommitLog(NodeMessage message)
