@@ -34,12 +34,12 @@ namespace Raft.Runner
             {
                 var command = Console.ReadLine();
 
-                if (string.IsNullOrEmpty(command))
+                if (command == "quit")
                 {
                     return;
                 }
 
-                if (command.Equals("?"))
+                if (string.IsNullOrEmpty(command) || command.Equals("?"))
                 {
                     ShowHelp();
                 }
