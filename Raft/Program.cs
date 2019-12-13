@@ -8,6 +8,7 @@ namespace Raft
         private static void Main(string[] args)
         {
             Console.WriteLine("Hello Raft!");
+            Console.WriteLine("Write ? to see what you can do");
             
             new RaftRunner().Run();
 

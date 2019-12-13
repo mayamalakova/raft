@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Raft.Entities;
 
 namespace Raft.Communication
@@ -19,6 +20,17 @@ namespace Raft.Communication
             NotifyListeners(nodeMessage);
         }
 
+        public void Send(NodeMessage nodeMessage, string recipientName)
+        {
+            if (_disconnectedNodes.Contains(nodeMessage.SenderName) ||
+                _disconnectedNodes.Contains(recipientName))
+            {
+                return;
+            }
+            var recipient = _listeners.First(x => x.Name == recipientName);
+            recipient?.ReceiveMessage(nodeMessage);
+        }
+
         public void Broadcast(NodeMessage nodeMessage)
         {
             if (!_disconnectedNodes.Contains(nodeMessage.SenderName))
@@ -26,6 +38,8 @@ namespace Raft.Communication
                 NotifyListeners(nodeMessage);
             }
         }
+        
+        
 
         public void Register(IMessageBrokerListener listener)
         {
@@ -46,6 +60,11 @@ namespace Raft.Communication
             {
                 _disconnectedNodes.Remove(node);
             }
+        }
+        
+        public bool IsConnected(IMessageBrokerListener nodeRunner)
+        {
+            return !_disconnectedNodes.Contains(nodeRunner.Name);
         }
 
         private void NotifyListeners(NodeMessage nodeMessage)

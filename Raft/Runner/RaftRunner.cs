@@ -34,12 +34,12 @@ namespace Raft.Runner
             {
                 var command = Console.ReadLine();
 
-                if (string.IsNullOrEmpty(command))
+                if (command == "quit")
                 {
                     return;
                 }
 
-                if (command.Equals("?"))
+                if (string.IsNullOrEmpty(command) || command.Equals("?"))
                 {
                     ShowHelp();
                 }
@@ -85,7 +85,7 @@ namespace Raft.Runner
         {
             foreach (var nodeRunner in _nodeRunners)
             {
-                Console.WriteLine(nodeRunner);
+                Console.WriteLine(nodeRunner.Display(Broker.IsConnected(nodeRunner)));
             }
         }
 
@@ -93,12 +93,14 @@ namespace Raft.Runner
         {
             var nodes = GetNodesForCommand(command);
             Broker.Connect(nodes.ToList());
+            DisplayStatus();
         }
 
         private void DisconnectNodes(string command)
         {
             var nodes = GetNodesForCommand(command);
             Broker.Disconnect(nodes.ToList());
+            DisplayStatus();
         }
 
         private static IEnumerable<string> GetNodesForCommand(string command)
@@ -122,6 +124,7 @@ namespace Raft.Runner
             Console.WriteLine("value - to enter new value ");
             Console.WriteLine("disconnect - to disconnect one or more nodes");
             Console.WriteLine("connect - to reconnect one or more nodes");
+            Console.WriteLine("timeout - to trigger and make one or more nodes candidates");
         }
 
         private void ConfigureLogging()

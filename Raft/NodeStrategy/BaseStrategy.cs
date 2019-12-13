@@ -8,7 +8,7 @@ namespace Raft.NodeStrategy
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         protected Node Node;
-
+        
         protected void BecomeLeader()
         {
             Logger.Debug($"{Node.Name} becomes leader, term: {Node.Status.Term}");
@@ -27,12 +27,34 @@ namespace Raft.NodeStrategy
         protected void ConfirmLogUpdate(NodeMessage message)
         {
             Node.UpdateLog(message, message.Id);
-            Node.ConfirmLogUpdate(message.Id);
+            Node.ConfirmLogUpdate(message.Id, message.SenderName);
         }
 
         protected void CommitLog(NodeMessage message)
         {
             Node.CommitLog(message);
+        }
+
+        protected bool CandidateIsUpToDate(NodeMessage message)
+        {
+            if (message.Type != MessageType.VoteRequest || Node.LastLogEntry() == null)
+            {
+                return true;
+            }
+            
+            var (term, logCount) = ParseLastLogEntryInfo(message);
+            return term >= Node.LastLogEntry().Term && (term != Node.LastLogEntry().Term || logCount >= Node.Log.Count);
+        }
+
+        private static (int term, int index) ParseLastLogEntryInfo(NodeMessage message)
+        {
+            var lastLogEntryInfo = message.Value.Split(",");
+            return (int.Parse(lastLogEntryInfo[0]), int.Parse(lastLogEntryInfo[1]));
+        }
+
+        protected virtual bool IsFromOlderTerm(NodeMessage message)
+        {
+            return message.Term < Node.Status.Term;
         }
     }
 }
