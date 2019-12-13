@@ -28,11 +28,12 @@ namespace Raft.Test.Strategy
             _followerStrategy = new FollowerStrategy(_node);
         }
 
-        [Test]
-        public void UpdateLogAndConfirm_OnLogUpdate()
+        [TestCase(0)]
+        [TestCase(1)]
+        public void UpdateLogAndConfirm_OnLogUpdate(int termIncrement)
         {
             const string leaderName = "L";
-            var logUpdate = new NodeMessage(FollowerTerm, "test", MessageType.LogUpdate, leaderName, Guid.Empty);
+            var logUpdate = new NodeMessage(FollowerTerm + termIncrement, "test", MessageType.LogUpdate, leaderName, Guid.Empty);
             _followerStrategy.RespondToMessage(logUpdate);
 
             _node.LastLogEntry().Value.ShouldBe("test");
@@ -43,13 +44,14 @@ namespace Raft.Test.Strategy
                      m.SenderName == FollowerName), Arg.Is<string>(x => x.Equals(leaderName)));
         }
 
-        [Test]
-        public void CommitLogAndUpdateValue_OnLogCommit()
+        [TestCase(0)]
+        [TestCase(1)]
+        public void CommitLogAndUpdateValue_OnLogCommit(int termIncrement)
         {
             var entryId = Guid.NewGuid();
             _node.Log.Add(new LogEntry(OperationType.Update, "test", entryId, FollowerTerm));
             
-            var logUpdate = new NodeMessage(FollowerTerm, "test", MessageType.LogCommit, "L", entryId);
+            var logUpdate = new NodeMessage(FollowerTerm + termIncrement, "test", MessageType.LogCommit, "L", entryId);
             _followerStrategy.RespondToMessage(logUpdate);
             
             _node.LastLogEntry().Value.ShouldBe("test");

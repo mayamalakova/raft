@@ -22,7 +22,7 @@ namespace Raft.NodeStrategy
             switch (message.Type)
             {
                 case MessageType.LogUpdate:
-                    if (message.Term == Node.Status.Term)
+                    if (message.Term >= Node.Status.Term)
                     {
                         ConfirmLogUpdate(message);
                     }
@@ -33,7 +33,7 @@ namespace Raft.NodeStrategy
                     break;
 
                 case MessageType.LogCommit:
-                    if (message.Term == Node.Status.Term)
+                    if (message.Term >= Node.Status.Term)
                     {
                         CommitLog(message);
                     }
