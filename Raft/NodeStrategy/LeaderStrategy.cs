@@ -1,4 +1,5 @@
 using System;
+using NLog;
 using Raft.Communication;
 using Raft.Entities;
 
@@ -9,6 +10,8 @@ namespace Raft.NodeStrategy
     /// </summary>
     public class LeaderStrategy : BaseStrategy, IMessageResponseStrategy
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        
         private readonly LeaderStatus _status;
 
         private readonly int _nodesCount;
@@ -60,6 +63,8 @@ namespace Raft.NodeStrategy
                 case MessageType.Info:
                     break;
                 case MessageType.VoteRequest:
+                    Logger.Debug($"{Node.Name} denies vote {message.Value} to {message.SenderName}");
+                    Node.Status.Term = message.Term + 1;
                     break;
                 case MessageType.LeaderVote:
                     break;
@@ -70,7 +75,11 @@ namespace Raft.NodeStrategy
 
         protected override bool IsFromOlderTerm(NodeMessage message)
         {
-            return message.Type != MessageType.ValueUpdate && base.IsFromOlderTerm(message);
+            if (message.Type == MessageType.ValueUpdate)
+            {
+                return false;
+            }
+            return base.IsFromOlderTerm(message);
         }
 
         private void ResetUpdateConfirmations()
