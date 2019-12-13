@@ -26,15 +26,15 @@ namespace Raft.NodeStrategy
 
         public void RespondToMessage(NodeMessage message)
         {
+            if (IsFromOlderTerm(message))
+            {
+                return;
+            }
+            
             if (message.Term > Node.Status.Term)
             {
                 BecomeFollower(message);
                 new FollowerStrategy(Node).RespondToMessage(message);
-                return;
-            }
-
-            if (message.Term < Node.Status.Term)
-            {
                 return;
             }
             

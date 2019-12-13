@@ -11,7 +11,7 @@ namespace Raft.NodeStrategy
     public class FollowerStrategy : BaseStrategy, IMessageResponseStrategy
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        
+
         public FollowerStrategy(Node node)
         {
             Node = node;
@@ -19,25 +19,22 @@ namespace Raft.NodeStrategy
 
         public void RespondToMessage(NodeMessage message)
         {
+            if (IsFromOlderTerm(message))
+            {
+                return;
+            }
+
             switch (message.Type)
             {
                 case MessageType.LogUpdate:
-                    if (message.Term >= Node.Status.Term)
-                    {
-                        ConfirmLogUpdate(message);
-                    }
-
+                    ConfirmLogUpdate(message);
                     break;
 
                 case MessageType.LogUpdateConfirmation:
                     break;
 
                 case MessageType.LogCommit:
-                    if (message.Term >= Node.Status.Term)
-                    {
-                        CommitLog(message);
-                    }
-
+                    CommitLog(message);
                     break;
 
                 case MessageType.ValueUpdate:
@@ -57,7 +54,7 @@ namespace Raft.NodeStrategy
                         Logger.Debug($"{Node.Name} denies vote {message.Value} to {message.SenderName}");
                         break;
                     }
-                    
+
                     Node.Status.Term = message.Term;
                     Node.Status.LastVote = message.Term;
                     Vote(message);

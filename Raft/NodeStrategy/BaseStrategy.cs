@@ -8,7 +8,7 @@ namespace Raft.NodeStrategy
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         protected Node Node;
-
+        
         protected void BecomeLeader()
         {
             Logger.Debug($"{Node.Name} becomes leader, term: {Node.Status.Term}");
@@ -50,6 +50,11 @@ namespace Raft.NodeStrategy
         {
             var lastLogEntryInfo = message.Value.Split(",");
             return (int.Parse(lastLogEntryInfo[0]), int.Parse(lastLogEntryInfo[1]));
+        }
+
+        protected virtual bool IsFromOlderTerm(NodeMessage message)
+        {
+            return message.Term < Node.Status.Term;
         }
     }
 }

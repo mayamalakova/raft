@@ -22,15 +22,15 @@ namespace Raft.NodeStrategy
 
         public void RespondToMessage(NodeMessage message)
         {
+            if (IsFromOlderTerm(message))
+            {
+                return;
+            }
+            
             if (message.Term > Node.Status.Term && CandidateIsUpToDate(message))
             {
                 BecomeFollower(message);
                 new FollowerStrategy(Node).RespondToMessage(message);
-                return;
-            }
-
-            if (message.Type != MessageType.ValueUpdate && message.Term < _status.Term)
-            {
                 return;
             }
             
@@ -66,6 +66,11 @@ namespace Raft.NodeStrategy
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        protected override bool IsFromOlderTerm(NodeMessage message)
+        {
+            return message.Type != MessageType.ValueUpdate && base.IsFromOlderTerm(message);
         }
 
         private void ResetUpdateConfirmations()
