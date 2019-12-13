@@ -19,5 +19,6 @@ namespace Raft.Entities
         void Connect(IEnumerable<string> nodes);
 
         IEnumerable<IMessageBrokerListener> Listeners { get; }
+        bool IsConnected(IMessageBrokerListener nodeRunner);
     }
 }

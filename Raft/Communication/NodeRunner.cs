@@ -23,6 +23,13 @@ namespace Raft.Communication
             return $"{Name} ({Node.Status.Term}) {Node.Status} - {Node.DisplayLog}".Replace("  ", " ");
         }
 
+        public string Display(bool connected)
+        {
+            return connected
+                ? $"{Name}  ({Node.Status.Term}) {Node.Status} - {Node.DisplayLog}".Replace("  ", " ")
+                : $"{Name}- ({Node.Status.Term}) {Node.Status} - {Node.DisplayLog}".Replace("  ", " ");
+        }
+
         public NodeRunner(Node node, ITimer timer, StrategySelector strategySelector)
         {
             Node = node;

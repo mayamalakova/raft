@@ -61,6 +61,11 @@ namespace Raft.Communication
                 _disconnectedNodes.Remove(node);
             }
         }
+        
+        public bool IsConnected(IMessageBrokerListener nodeRunner)
+        {
+            return !_disconnectedNodes.Contains(nodeRunner.Name);
+        }
 
         private void NotifyListeners(NodeMessage nodeMessage)
         {

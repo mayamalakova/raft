@@ -11,5 +11,7 @@ namespace Raft.Communication
         
         string Name { get; }
         void Timeout();
+
+        string Display(bool connected);
     }
 }

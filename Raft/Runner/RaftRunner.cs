@@ -85,7 +85,7 @@ namespace Raft.Runner
         {
             foreach (var nodeRunner in _nodeRunners)
             {
-                Console.WriteLine(nodeRunner);
+                Console.WriteLine(nodeRunner.Display(Broker.IsConnected(nodeRunner)));
             }
         }
 
@@ -93,12 +93,14 @@ namespace Raft.Runner
         {
             var nodes = GetNodesForCommand(command);
             Broker.Connect(nodes.ToList());
+            DisplayStatus();
         }
 
         private void DisconnectNodes(string command)
         {
             var nodes = GetNodesForCommand(command);
             Broker.Disconnect(nodes.ToList());
+            DisplayStatus();
         }
 
         private static IEnumerable<string> GetNodesForCommand(string command)
