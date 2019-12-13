@@ -117,6 +117,17 @@ namespace Raft.Test.Strategy
             
             _messageBroker.Received(expectation ? 1 : 0).Send(Arg.Any<NodeMessage>(), Arg.Is<string>(x => x.Equals(leaderName)));
         }
-        
+
+        [TestCase(MessageType.LogUpdate)]
+        [TestCase(MessageType.LogCommit)]
+        [TestCase(MessageType.Info)]
+        public void UpdateTermToMatchNewerLeader(MessageType messageType)
+        {
+            _node.Status = new FollowerStatus(2);
+            var logUpdate = new NodeMessage(3, "test", messageType, "L", Guid.Empty);
+            _followerStrategy.RespondToMessage(logUpdate);
+
+            _node.Status.Term.ShouldBe(3);
+        }
     }
 }

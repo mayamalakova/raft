@@ -27,6 +27,7 @@ namespace Raft.NodeStrategy
             switch (message.Type)
             {
                 case MessageType.LogUpdate:
+                    Node.Status.Term = message.Term;
                     ConfirmLogUpdate(message);
                     break;
 
@@ -34,6 +35,7 @@ namespace Raft.NodeStrategy
                     break;
 
                 case MessageType.LogCommit:
+                    Node.Status.Term = message.Term;
                     CommitLog(message);
                     break;
 
@@ -41,6 +43,7 @@ namespace Raft.NodeStrategy
                     break;
 
                 case MessageType.Info:
+                    Node.Status.Term = message.Term;
                     break;
 
                 case MessageType.VoteRequest:
