@@ -70,7 +70,7 @@ namespace Raft.Entities
         private void SendVoteRequest(int term)
         {
             var lastLogEntry = LastLogEntry();
-            var value = lastLogEntry == null ? "0,-1" : $"{lastLogEntry.Term},{Log.Count - 1}"; 
+            var value = lastLogEntry == null ? "0,0" : $"{lastLogEntry.Term},{Log.Count}"; 
             var message = new NodeMessage(term, value, MessageType.VoteRequest, Name, Guid.NewGuid());
             Broker.Broadcast(message);
         }

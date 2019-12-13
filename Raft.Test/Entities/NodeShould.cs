@@ -51,7 +51,7 @@ namespace Raft.Test.Entities
             _node.Log.Add(new LogEntry(OperationType.Update, "value", Guid.NewGuid(), 1));
             _node.BecomeCandidate();
             
-            _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.VoteRequest && m.Value.Equals("1,0")));
+            _messageBroker.Received(1).Broadcast(Arg.Is<NodeMessage>(m => m.Type == MessageType.VoteRequest && m.Value.Equals("1,1")));
         }
 
         [Test]

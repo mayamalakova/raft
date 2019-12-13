@@ -42,8 +42,8 @@ namespace Raft.NodeStrategy
                 return true;
             }
             
-            var (term, index) = ParseLastLogEntryInfo(message);
-            return term >= Node.LastLogEntry().Term && (term != Node.LastLogEntry().Term || index >= Node.Log.Count - 1);
+            var (term, logCount) = ParseLastLogEntryInfo(message);
+            return term >= Node.LastLogEntry().Term && (term != Node.LastLogEntry().Term || logCount >= Node.Log.Count);
         }
 
         private static (int term, int index) ParseLastLogEntryInfo(NodeMessage message)
